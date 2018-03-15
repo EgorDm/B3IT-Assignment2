@@ -3,7 +3,7 @@
 #include "defines.h"
 #include "file_processing.h"
 #include "image_processing.h"
-#include "algorithms.h"
+#include "segmentation.h"
 #include "visualization.h"
 #include "rainbows.h"
 #include "evaluation.h"
@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     rainbows::translate_coolors(dominantColor);
     rainbows::translate_coolors(high);
 
-    auto mask = algorithms::simple_segmentation(hsv_input, low, high);
+    auto mask = algorithms::segmentation::simple_segmentation(hsv_input, low, high);
     Mat masked;
     sample.input.copyTo(masked, mask);
 
