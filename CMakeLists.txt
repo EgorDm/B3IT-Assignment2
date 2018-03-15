@@ -3,7 +3,10 @@ project(${MAIN_PROJECT_NAME})
 
 set(CMAKE_CXX_STANDARD 11)
 
+find_package(OpenCV REQUIRED)
+
 enable_testing()
 
 add_subdirectory(main)
+add_subdirectory(cvision)
 add_subdirectory(test)
