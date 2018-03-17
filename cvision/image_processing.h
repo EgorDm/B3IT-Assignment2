@@ -42,6 +42,9 @@ namespace cvision { namespace processing { namespace image {
     Histogram extract_histogram(const Mat *src, const unsigned int src_count, const float ranges[],
                                 const Mat *mask, const int binSize = 128);
 
+    float probability_masked_pixels(const Mat *mask, const unsigned int src_count);
+
+    double* extract_dominant_color(const Histogram &histogram);
 }}}
 
 #endif //B3ITASSIGNMENT2_IMAGE_PROCESSING_H

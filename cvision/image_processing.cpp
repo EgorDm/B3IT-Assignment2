@@ -39,13 +39,30 @@ image::Histogram image::extract_histogram(const Mat *src, const unsigned int src
     return image::Histogram(channels, channel_count, end_ranges);
 }
 
-Scalar image::extract_dominant_color(const Histogram &histogram) {
-    int maxH = 0, maxS = 0, maxV = 0;
+double* image::extract_dominant_color(const image::Histogram &histogram) {
+    int maxes[histogram.channel_count];
+    double *ret = new double[histogram.channel_count];
 
-    for (int i = 0; i < 128; i++) {
-        maxH = histogram[0].at<float>(i) > histogram[0].at<float>(maxH) ? i : maxH;
-        maxS = histogram[1].at<float>(i) > histogram[1].at<float>(maxS) ? i : maxS;
-        maxV = histogram[2].at<float>(i) > histogram[2].at<float>(maxV) ? i : maxV;
+
+    for (int i = 0; i < histogram.bin_count(); i++) {
+        for(int j = 0; j < histogram.channel_count; ++j) {
+            maxes[j] = histogram[j].at<float>(i) > histogram[j].at<float>(maxes[j]) ? i : maxes[j];
+        }
+    }
+
+    for(int j = 0; j < histogram.channel_count; ++j) {
+        ret[j] = (histogram.ranges[j] / histogram.bin_count()) * maxes[j];
+    }
+
+    return ret;
+}
+
+float image::probability_masked_pixels(const Mat *mask, const unsigned int src_count) {
+    float ret = 0;
+    for(unsigned int i = 0; i < src_count; ++i) {
+        double masked_px  = countNonZero(mask[i]);
+        double all_px = (mask[i].rows * mask[i].cols);
+        ret += (masked_px / all_px) / src_count;
     }
     return ret;
 }
