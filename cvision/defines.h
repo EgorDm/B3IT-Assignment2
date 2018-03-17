@@ -15,6 +15,6 @@
 #define DATASET_INPUTS ("inputs" FILE_SEPARATOR)
 #define DATASET_LABELS ("labels" FILE_SEPARATOR)
 
-using Histogram = std::vector<cv::Mat>;
+#define EPSILON 0.001
 
 #endif //B3ITASSIGNMENT2_DEFINES_H
