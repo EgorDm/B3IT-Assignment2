@@ -41,8 +41,9 @@ image::Histogram *image::extract_histogram(const Mat *src, const unsigned int sr
 
 double* image::extract_dominant_color(const image::Histogram &histogram) {
     int maxes[histogram.channel_count];
-    double *ret = new double[histogram.channel_count];
+    auto *ret = new double[histogram.channel_count];
 
+    for(int j = 0; j < histogram.channel_count; ++j) maxes[j] = 0;
 
     for (int i = 0; i < histogram.bin_count(); i++) {
         for(int j = 0; j < histogram.channel_count; ++j) {
