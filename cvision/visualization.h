@@ -7,6 +7,7 @@
 
 #include <opencv2/opencv.hpp>
 #include "defines.h"
+#include "image_processing.h"
 
 #define HISTOGRAM_WINDOW "Histogram Window"
 #define IMAGE_WINDOW "Image Window"
@@ -14,10 +15,12 @@
 using namespace cv;
 
 namespace cvision { namespace visualization {
-    void draw_hsv_histogram(const Histogram &histogram, const int binSize = 128, const int width = 512,
-                            const int height = 512);
+    void draw_hsv_histogram(const cvision::processing::image::Histogram &histogram, const int binSize = 128,
+                            const int width = 512, const int height = 512);
 
-    void show_image(const Mat &image, const std::string &title = IMAGE_WINDOW);
+    void draw_histogram(const cvision::processing::image::Histogram &histogram, const int binSize = 128, const std::string title = HISTOGRAM_WINDOW);
+
+    void show_image(const Mat &image, const std::string title = IMAGE_WINDOW);
 }};
 
 
