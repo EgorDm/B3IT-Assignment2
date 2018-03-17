@@ -27,7 +27,14 @@ namespace cvision { namespace processing { namespace file {
      * @param img_name
      * @return
      */
-    ImageSample load_sample(const std::string &dataset_name, const std::string &img_name);
+    ImageSample load_sample(const std::string &dataset_name, const std::string &img_name, const bool inverted = false,
+                            const std::string &ext_in = ".jpg", const std::string &ext_lbl = ".png");
+
+
+    std::vector<file::ImageSample> load_dataset(const std::string &dataset_name, const bool inverted = false,
+                                                const std::string &ext_in = ".jpg",  const std::string &ext_lbl = ".png");
+
+    std::vector<std::string> list_dir(const std::string &path);
 }}};
 
 
