@@ -4,6 +4,6 @@ file(GLOB SOURCE_FILES
         "*.hpp"
         )
 
-add_executable(cvision ${SOURCE_FILES})
+add_library(cvision ${SOURCE_FILES})
 
 target_link_libraries(cvision ${OpenCV_LIBS})

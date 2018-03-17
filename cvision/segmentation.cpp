@@ -32,10 +32,10 @@ cv::Mat segmentation::complex_segmentation(const cv::Mat &src, const Histogram &
         write_row = ret.ptr<cv::Vec3b>(j);
 
         for (int i = 0; i < tmp_src.cols; ++i) {
-            const double color[3] = {(double)read_row[i][0], (double)read_row[i][1], (double)read_row[i][2]};
+            const double color[3] = {(double) read_row[i][0], (double) read_row[i][1], (double) read_row[i][2]};
             const float probability = bayes_probability(target_histogram.probability(color),
                                                         environment_histogram.probability(color), positive_probability);
-            if(probability > threshold) {
+            if (probability > threshold) {
                 write_row[i][0] = 0xFF;
                 write_row[i][1] = 0xFF;
                 write_row[i][2] = 0xFF;
@@ -53,16 +53,18 @@ segmentation::clean_segmentation(const cv::Mat &src, const int &ksize, const int
     src.copyTo(ret);
 
     // Morphological Processing
-//    Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(ksize, ksize));
-//    morphologyEx(src, ret, MORPH_ERODE, kernel, Point(-1, -1), 2);
-//    morphologyEx(ret, ret, MORPH_DILATE, kernel, Point(-1, -1), 2);
+    if (ksize > 3) {
+        Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(ksize, ksize));
+        morphologyEx(src, ret, MORPH_ERODE, kernel, Point(-1, -1), 2);
+        morphologyEx(ret, ret, MORPH_DILATE, kernel, Point(-1, -1), 2);
+    }
 
-    GaussianBlur(ret, ret, Size(3, 3), 4);
+    if (close_ksize > 3) {
+        Mat close_element = getStructuringElement(MORPH_ELLIPSE, Size(close_ksize, close_ksize), cv::Point(2, 2));
+        morphologyEx(ret, ret, MORPH_CLOSE, close_element, Point(-1, -1), 2);
+    }
 
-    Mat close_element = getStructuringElement(MORPH_RECT, Size(close_ksize, close_ksize), cv::Point(2, 2));
-    morphologyEx(ret, ret, MORPH_CLOSE, close_element, Point(-1, -1), 2);
-
-    //GaussianBlur(ret, ret, Size(blur_ksize, blur_ksize), 4);
+    if(blur_ksize > 0 && blur_ksize % 2 != 0) GaussianBlur(ret, ret, Size(blur_ksize, blur_ksize), 4);
 
     return ret;
 }

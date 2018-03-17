@@ -62,10 +62,10 @@ evaluation::ConfusionMatrixResults evaluation::ConfusionMatrix::evaluate() {
 std::ostream &evaluation::operator<<(std::ostream &stream, const evaluation::ConfusionMatrix &o) {
     int total = (o.fp + o.fn + o.tp + o.tn);
     return stream << "- Confusion Matrix: " << std::endl
-                  << "\tTrue Positives: " << o.tp << " | %" << ((double) o.tp / total) << std::endl
-                  << "\tFalse Positives: " << o.fp << " | %" << ((double) o.fp / total) << std::endl
-                  << "\tTrue Negatives: " << o.tn << " | %" << ((double) o.tn / total) << std::endl
-                  << "\tFalse Negatives: " << o.fn << " | %" << ((double) o.fn / total) << std::endl;
+                  << "\tTrue Positives: " << o.tp << " | %" << ((double) o.tp / total) * 100 << std::endl
+                  << "\tFalse Positives: " << o.fp << " | %" << ((double) o.fp / total)* 100 << std::endl
+                  << "\tTrue Negatives: " << o.tn << " | %" << ((double) o.tn / total)* 100 << std::endl
+                  << "\tFalse Negatives: " << o.fn << " | %" << ((double) o.fn / total)* 100 << std::endl;
 }
 
 std::ostream &evaluation::operator<<(std::ostream &stream, const evaluation::ConfusionMatrixResults &o) {
