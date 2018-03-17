@@ -12,10 +12,13 @@
 using namespace cvision::processing::image;
 
 namespace cvision { namespace algorithms { namespace segmentation {
-    cv::Mat simple_segmentation(const cv::Mat &src, const cv::Scalar &low, const cv::Scalar &high, const int &ksize = 4,
-                                const int &close_ksize = 4, const int &blur_ksize = 7);
     cv::Mat simple_segmentation(const cv::Mat &src, const cv::Scalar &low, const cv::Scalar &high);
 
+    cv::Mat complex_segmentation(const cv::Mat &src, const Histogram &target_histogram,
+                                 const Histogram &environment_histogram, const float threshold,
+                                 const float &positive_probability);
+
+    cv::Mat clean_segmentation(const cv::Mat &src, const int &ksize = 4, const int &close_ksize = 4,const int &blur_ksize = 7);
 }}};
 
 
