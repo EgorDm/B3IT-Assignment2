@@ -5,12 +5,13 @@
 #include "segmentation.h"
 #include <opencv2/opencv.hpp>
 #include "visualization.h"
+#include "evaluation.h"
 
 using namespace cvision::algorithms;
+using namespace cvision::evaluation;
 
 cv::Mat
-segmentation::simple_segmentation(const cv::Mat &src, const cv::Scalar &low, const cv::Scalar &high, const int &ksize,
-                                  const int &close_ksize, const int &blur_ksize) {
+segmentation::simple_segmentation(const cv::Mat &src, const cv::Scalar &low, const cv::Scalar &high) {
     Mat prediction_mask;
     inRange(src, low, high, prediction_mask);
 
