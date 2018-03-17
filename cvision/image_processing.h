@@ -39,7 +39,7 @@ namespace cvision { namespace processing { namespace image {
         const cv::Mat &operator[](const unsigned int i) const { return channels[i]; }
     };
 
-    Histogram extract_histogram(const Mat *src, const unsigned int src_count, const float ranges[],
+    Histogram *extract_histogram(const Mat *src, const unsigned int src_count, const float ranges[],
                                 const Mat *mask, const int binSize = 128);
 
     float probability_masked_pixels(const Mat *mask, const unsigned int src_count);

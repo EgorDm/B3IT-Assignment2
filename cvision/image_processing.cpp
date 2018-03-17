@@ -6,7 +6,7 @@
 
 using namespace cvision::processing;
 
-image::Histogram image::extract_histogram(const Mat *src, const unsigned int src_count, const float ranges[],
+image::Histogram *image::extract_histogram(const Mat *src, const unsigned int src_count, const float ranges[],
                                           const Mat *mask, const int binSize) {
     int channel_count = src[0].channels();
     const float *ranges_hist[channel_count];
@@ -36,7 +36,7 @@ image::Histogram image::extract_histogram(const Mat *src, const unsigned int src
 
     for (int i = 0; i < channel_count; ++i) normalize(channels[i], channels[i], 1, 0, NORM_L1);
 
-    return image::Histogram(channels, channel_count, end_ranges);
+    return new image::Histogram(channels, channel_count, end_ranges);
 }
 
 double* image::extract_dominant_color(const image::Histogram &histogram) {
