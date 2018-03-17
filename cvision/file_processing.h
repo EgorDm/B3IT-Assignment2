@@ -31,9 +31,22 @@ namespace cvision { namespace processing { namespace file {
                             const std::string &ext_in = ".jpg", const std::string &ext_lbl = ".png");
 
 
+    /**
+     * Load a whole dataset. This is really bad. Everything in memory. Mayby better do one by one
+     * @param dataset_name
+     * @param inverted
+     * @param ext_in
+     * @param ext_lbl
+     * @return
+     */
     std::vector<file::ImageSample> load_dataset(const std::string &dataset_name, const bool inverted = false,
                                                 const std::string &ext_in = ".jpg",  const std::string &ext_lbl = ".png");
 
+    /**
+     * Get all files in directory
+     * @param path
+     * @return
+     */
     std::vector<std::string> list_dir(const std::string &path);
 }}};
 

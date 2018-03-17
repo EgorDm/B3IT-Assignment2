@@ -8,8 +8,8 @@ using namespace cv;
 using namespace cvision::processing;
 
 int main() {
-    auto window = create_simple_seg_window("hgr1", "4_P_hgr1_id01_3", true, ".jpg", ".bmp");
-    //auto window = create_complex_seg_window("hgr1", "4_P_hgr1_id01_3", true, ".jpg", ".bmp");
+    //auto window = create_simple_seg_window("hgr1", "4_P_hgr1_id01_3", true, ".jpg", ".bmp");
+    auto window = create_complex_seg_window("hgr1", "4_P_hgr1_id01_3", true, ".jpg", ".bmp");
     window.show();
 
     waitKey(0);

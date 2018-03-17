@@ -8,6 +8,10 @@
 #include <opencv2/opencv.hpp>
 
 namespace cvision { namespace rainbows {
+    /**
+     * Convert hsv color to values which can be used in coolors
+     * @param color
+     */
     void translate_coolors(const cv::Scalar &color) {
         std::cout << "H: " << (color[0] * 2)
                   << " S: " << ((color[1] / 255) * 100)
