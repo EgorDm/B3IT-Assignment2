@@ -32,6 +32,16 @@ Scalar image::extract_dominant_color(const Histogram &histogram) {
         maxS = histogram[1].at<float>(i) > histogram[1].at<float>(maxS) ? i : maxS;
         maxV = histogram[2].at<float>(i) > histogram[2].at<float>(maxV) ? i : maxV;
     }
+    return ret;
+}
 
-    return {(180.0 / 128) * maxH, (256.0 / 128) * maxS, (256.0 / 128) * maxV};
+float image::Histogram::probability(const double *value) const {
+    float ret = 1;
+    for (int i = 0; i < channel_count; ++i) ret *= intensity(i, value[i]);
+    return ret;
+}
+
+float image::Histogram::intensity(int channel, double value) const {
+    auto bin = static_cast<int>(std::round((value / ranges[channel]) * bin_count()));
+    return channels[channel].at<float>(bin);
 }

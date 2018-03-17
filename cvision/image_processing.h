@@ -11,7 +11,10 @@
 using namespace cv;
 
 namespace cvision { namespace processing { namespace image {
-    Histogram extract_hsv_histogram(const Mat &src, const Mat &mask = Mat(), const int binSize = 128);
+    struct Histogram {
+        const int channel_count;
+        const float *ranges;
+        const cv::Mat *channels;
 
     Scalar extract_dominant_color(const std::vector<Mat> &histogram);
 }}}
