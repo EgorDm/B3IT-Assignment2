@@ -22,6 +22,8 @@ namespace cvision { namespace evaluation {
     std::ostream &operator<<(std::ostream &stream, ConfusionMatrix const &o);
 
     ConfusionMatrix make_confsion_matrix(const cv::Mat &input, const cv::Mat &ground_truth, const cv::Mat &prediction);
+
+    float bayes_probability(float pa, float pb, float marginal_pa);
 }};
 
 

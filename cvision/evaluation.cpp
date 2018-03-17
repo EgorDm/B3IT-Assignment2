@@ -60,9 +60,12 @@ evaluation::ConfusionMatrixResults evaluation::ConfusionMatrix::evaluate() {
 }
 
 std::ostream &evaluation::operator<<(std::ostream &stream, const evaluation::ConfusionMatrix &o) {
+    int total = (o.fp + o.fn + o.tp + o.tn);
     return stream << "- Confusion Matrix: " << std::endl
-                  << "\tTrue Positives: " << o.tp << std::endl << "\tFalse Positives: " << o.fp << std::endl
-                  << "\tTrue Negatives: " << o.tn << std::endl << "\tFalse Negatives: " << o.fn << std::endl;
+                  << "\tTrue Positives: " << o.tp << " | %" << ((double) o.tp / total) << std::endl
+                  << "\tFalse Positives: " << o.fp << " | %" << ((double) o.fp / total) << std::endl
+                  << "\tTrue Negatives: " << o.tn << " | %" << ((double) o.tn / total) << std::endl
+                  << "\tFalse Negatives: " << o.fn << " | %" << ((double) o.fn / total) << std::endl;
 }
 
 std::ostream &evaluation::operator<<(std::ostream &stream, const evaluation::ConfusionMatrixResults &o) {
@@ -75,4 +78,9 @@ std::ostream &evaluation::operator<<(std::ostream &stream, const evaluation::Con
                   << "\tF1 Score: " << o.f1 << std::endl
                   << "\tSpecificity: " << o.specificity << std::endl
                   << "\tGenerality: " << o.generality << std::endl;
+}
+
+float evaluation::bayes_probability(float pa, float pb, float marginal_pa) {
+    auto tmp = pa * marginal_pa;
+    return tmp / (tmp + pb * (1 - marginal_pa));
 }
