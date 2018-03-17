@@ -5,7 +5,6 @@
 #ifndef B3ITASSIGNMENT2_EVAL_WINDOW_H
 #define B3ITASSIGNMENT2_EVAL_WINDOW_H
 
-
 #include "window.h"
 
 #include <utility>
@@ -19,9 +18,9 @@ using namespace cvision::processing;
 
 class ComplexSegmentationWindow : public Window {
 private:
-    image::Histogram skin_histogram;
-    image::Histogram env_histogram;
-    float marginal_positive_probability;
+    const image::Histogram *skin_histogram;
+    const image::Histogram *env_histogram;
+    const float marginal_positive_probability;
     file::ImageSample sample;
     int threshold, preblur, ed_size, close_size, postblur, marginal_weight;
     float pskin{}, penv{}, pbayes{};
@@ -29,8 +28,8 @@ private:
     cvision::evaluation::ConfusionMatrixResults cf_results{};
 
 public:
-    ComplexSegmentationWindow(const image::Histogram &skin_histogram, const image::Histogram &env_histogram,
-               float marginal_positive_probability, file::ImageSample sample)
+    ComplexSegmentationWindow(const image::Histogram *skin_histogram, const image::Histogram *env_histogram,
+                              float marginal_positive_probability, file::ImageSample sample)
             : Window(COMPLEX_SEG_WINDOW_NAME), skin_histogram(skin_histogram), env_histogram(env_histogram),
               marginal_positive_probability(marginal_positive_probability), sample(std::move(sample)),
               threshold(50), preblur(4), ed_size(4), close_size(4), postblur(4), marginal_weight(100) {
@@ -58,6 +57,11 @@ public:
 private:
     void init() override;
 };
+
+ComplexSegmentationWindow
+create_complex_seg_window(const std::string &dataset_name, const std::string &sample_name, const bool inverted,
+                          const std::string &ext_in,
+                          const std::string &ext_lbl);
 
 
 #endif //B3ITASSIGNMENT2_EVAL_WINDOW_H

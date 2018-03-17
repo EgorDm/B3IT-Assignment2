@@ -20,7 +20,7 @@ cv::Mat ComplexSegmentationWindow::draw() {
     }
 
     auto mweight = (float)(0.5 + ((marginal_positive_probability - 0.5) * (((float) marginal_weight) / 100)));
-    auto mask = segmentation::complex_segmentation(prefx, skin_histogram, env_histogram, threshold_a, mweight);
+    auto mask = segmentation::complex_segmentation(prefx, *skin_histogram, *env_histogram, threshold_a, mweight);
     mask = segmentation::clean_segmentation(mask, ed_size, close_size, (postblur % 2 == 0) ? postblur + 1 : postblur);
 
     Mat result, postfx;
@@ -31,6 +31,7 @@ cv::Mat ComplexSegmentationWindow::draw() {
     cf_results = matrix.evaluate();
     std::cout << matrix << cf_results << std::endl;
 
+    cvtColor(postfx, postfx, COLOR_HSV2BGR);
     return postfx;
 }
 
@@ -53,13 +54,12 @@ void ComplexSegmentationWindow::on_trackbar(int newValue, void *object) {
     ((ComplexSegmentationWindow *) object)->show();
 }
 
-
 void ComplexSegmentationWindow::on_click(int x, int y) {
     colour = sample.input.at<Vec3b>(Point(x, y));
     double color_array[3] = {colour[0], colour[1], colour[2]};
 
-    pskin = skin_histogram.probability(color_array);
-    penv = env_histogram.probability(color_array);
+    pskin = skin_histogram->probability(color_array);
+    penv = env_histogram->probability(color_array);
     pbayes = bayes_probability(pskin, penv, marginal_positive_probability);
     /*std::cout << "Pixel " << color_array[2] << "," << color_array[1] << "," << color_array[0] << std::endl
               << "\tProbability skin: " << pskin << std::endl
@@ -104,4 +104,29 @@ std::string ComplexSegmentationWindow::get_probability2() {
     std::stringstream ss;
     ss  << "Pm: " << marginal_positive_probability << "| Pb: " << pbayes;
     return ss.str();
+}
+
+ComplexSegmentationWindow
+create_complex_seg_window(const std::string &dataset_name, const std::string &sample_name, const bool inverted,
+                          const std::string &ext_in, const std::string &ext_lbl) {
+    auto dataset = file::load_dataset(dataset_name, inverted,ext_in, ext_lbl);
+    auto sample = file::load_sample(dataset_name, sample_name, inverted, ext_in, ext_lbl);
+
+    Mat dataset_inputs[dataset.size()];
+    Mat dataset_masks[dataset.size()];
+    Mat dataset_masks_inv[dataset.size()];
+
+    for (int i = 0; i < dataset.size(); ++i) {
+        dataset_inputs[i] = dataset[i].input;
+        dataset_masks[i] = dataset[i].label;
+        bitwise_not(dataset_masks[i], dataset_masks_inv[i]);
+    }
+
+    const float ranges[3] = {256, 256, 256};
+
+    auto positive_hst = image::extract_histogram(dataset_inputs, (uint) dataset.size(), ranges, dataset_masks, 256);
+    auto env_hst = image::extract_histogram(dataset_inputs, (uint) dataset.size(), ranges, dataset_masks_inv, 256);
+    auto marginal_positive_prob = image::probability_masked_pixels(dataset_masks, (uint) dataset.size());
+
+    return ComplexSegmentationWindow(positive_hst, env_hst, marginal_positive_prob, sample);
 }
