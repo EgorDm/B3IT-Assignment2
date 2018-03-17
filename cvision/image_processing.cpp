@@ -3,25 +3,40 @@
 //
 
 #include "image_processing.h"
-#include "defines.h"
 
 using namespace cvision::processing;
 
-Histogram image::extract_hsv_histogram(const Mat &src, const Mat &mask, const int binSize) {
-    float hrange[] = {0, 180};
-    float svrange[] = {0, 256};
-    const float *hranges[] = {hrange};
-    const float *svranges[] = {svrange};
+image::Histogram image::extract_histogram(const Mat *src, const unsigned int src_count, const float ranges[],
+                                          const Mat *mask, const int binSize) {
+    int channel_count = src[0].channels();
+    const float *ranges_hist[channel_count];
+    auto *end_ranges = new float[channel_count];
 
-    Mat hsv_planes[3];
-    split(src, hsv_planes);
+    for (int i = 0; i < channel_count; ++i) {
+        const float range_partial[] = {0, ranges[i]};
+        ranges_hist[i] = range_partial;
+        end_ranges[i] = ranges[i];
+    }
 
-    Histogram histogram = {Mat(), Mat(), Mat()};
-    calcHist(&hsv_planes[0], 1, 0, mask, histogram[0], 1, &binSize, hranges, true, false);
-    calcHist(&hsv_planes[1], 1, 0, mask, histogram[1], 1, &binSize, svranges, true, false);
-    calcHist(&hsv_planes[2], 1, 0, mask, histogram[2], 1, &binSize, svranges, true, false);
+    /* This needs some explaination.
+     We are splitting channels then calculating histogram because then we will get a bin_size x channel_size
+     array. Meanwhile doing it the traditional way by doing all channels at once gives bin_size ^ channel_size
+     array. I dont get the logic but sounds like the worst deal in history!*/
+    auto *channels = new Mat[3];
 
-    return histogram;
+    for (int i = 0; i < src_count; ++i) {
+        Mat hsv_planes[channel_count];
+        split(src[i], hsv_planes);
+
+        for (int j = 0; j < channel_count; ++j) {
+            calcHist(&hsv_planes[j], 1, 0, mask[i], channels[j], 1, &binSize, &ranges_hist[j], true, true);
+            // TODO: can we overflow? Should we therefore normalize here too?
+        }
+    }
+
+    for (int i = 0; i < channel_count; ++i) normalize(channels[i], channels[i], 1, 0, NORM_L1);
+
+    return image::Histogram(channels, channel_count, end_ranges);
 }
 
 Scalar image::extract_dominant_color(const Histogram &histogram) {
