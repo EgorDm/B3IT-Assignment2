@@ -64,3 +64,4 @@ target_wrapper.*
 
 # QtCtreator CMake
 CMakeLists.txt.user*
+CMakeListsPrivate.txt
