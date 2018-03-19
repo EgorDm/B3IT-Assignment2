@@ -11,6 +11,7 @@
 #include "../cvision/image_processing.h"
 #include "../cvision/file_processing.h"
 #include "../cvision/evaluation.h"
+#include "segmentation_helper.h"
 
 using namespace cvision::processing;
 
@@ -18,44 +19,16 @@ using namespace cvision::processing;
 
 class ComplexSegmentationWindow : public Window {
 private:
-    const image::Histogram *skin_histogram;
-    const image::Histogram *env_histogram;
-    const float marginal_positive_probability;
     file::ImageSample sample;
-    int threshold, preblur, ed_size, close_size, postblur, marginal_weight;
-    float pskin{}, penv{}, pbayes{};
-    Vec3b colour;
-    cvision::evaluation::ConfusionMatrixResults cf_results{};
+    ComplexSegmentationHelper *helper;
 
 public:
-    ComplexSegmentationWindow(const image::Histogram *skin_histogram, const image::Histogram *env_histogram,
-                              float marginal_positive_probability, file::ImageSample sample)
-            : Window(COMPLEX_SEG_WINDOW_NAME), skin_histogram(skin_histogram), env_histogram(env_histogram),
-              marginal_positive_probability(marginal_positive_probability), sample(std::move(sample)),
-              threshold(50), preblur(4), ed_size(4), close_size(4), postblur(4), marginal_weight(100) {
-        init();
-    }
+    ComplexSegmentationWindow(file::ImageSample sample, ComplexSegmentationHelper *helper)
+            : Window(COMPLEX_SEG_WINDOW_NAME), helper(helper), sample(std::move(sample)) { }
+
+    void init() override;
 
     cv::Mat draw() override;
-
-    static void on_trackbar(int newValue, void *object);
-
-    void on_click(int x, int y) override;
-
-    std::string get_recall();
-
-    std::string get_precision();
-
-    std::string get_score();
-
-    std::string get_error();
-
-    std::string get_probability();
-
-    std::string get_probability2();
-
-private:
-    void init() override;
 };
 
 ComplexSegmentationWindow

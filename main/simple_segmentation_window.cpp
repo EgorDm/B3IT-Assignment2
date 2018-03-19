@@ -1,3 +1,4 @@
+/*
 //
 // Created by egordm on 17-3-2018.
 //
@@ -106,3 +107,4 @@ create_simple_seg_window(const std::string &dataset_name, const std::string &sam
 
     return SimpleSegmentationWindow(positive_hst, marginal_positive_prob, sample);
 }
+*/

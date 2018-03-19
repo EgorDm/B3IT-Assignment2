@@ -1,3 +1,4 @@
+/*
 //
 // Created by egordm on 17-3-2018.
 //
@@ -55,3 +56,4 @@ create_simple_seg_window(const std::string &dataset_name, const std::string &sam
                          const std::string &ext_lbl);
 
 #endif //B3ITASSIGNMENT2_SIMPLE_SEGMENTATION_WINDOW_H
+*/
