@@ -33,6 +33,8 @@ protected:
 public:
     explicit Window(const std::string &window_name);
 
+    Window(const std::string &window_name, const std::vector<WindowHelper *> &helpers);
+
     virtual ~Window();
 
     virtual void init();

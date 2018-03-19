@@ -13,6 +13,12 @@ Window::Window(const std::string &window_name) : window_name(window_name) {
     cv::setMouseCallback(window_name, &on_mouse, this);
 }
 
+Window::Window(const std::string &window_name, const std::vector<WindowHelper *> &helpers)
+        : window_name(window_name), helpers(helpers) {
+    cv::namedWindow(window_name, CV_WINDOW_NORMAL);//CV_WINDOW_KEEPRATIO
+    cv::setMouseCallback(window_name, &on_mouse, this);
+}
+
 void Window::show() {
     cv::Mat res = draw();
 

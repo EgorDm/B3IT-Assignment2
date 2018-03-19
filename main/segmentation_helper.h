@@ -12,22 +12,6 @@
 
 using namespace cvision::processing;
 
-class CFMatrixHelper : public WindowHelper {
-public:
-    cvision::evaluation::ConfusionMatrixResults cf_results{};
-
-    std::string get_recall();
-
-    std::string get_precision();
-
-    std::string get_score();
-
-    std::string get_error();
-
-    std::vector<Statistic> get_statistics() override;
-};
-
-
 class ComplexSegmentationHelper : public WindowHelper {
 private:
     Mat frame;
@@ -55,6 +39,21 @@ public:
     std::string get_probability();
 
     std::string get_probability2();
+};
+
+class SimpleSegmentationHelper : public WindowHelper {
+private:
+    const image::Histogram *skin_histogram;
+public:
+    int alpha, beta, gamma, preblur, ed_size, close_size, postblur;
+
+    explicit SimpleSegmentationHelper(const image::Histogram *skin_histogram)
+            : skin_histogram(skin_histogram),
+              alpha(4), beta(20), gamma(5), preblur(4), ed_size(4), close_size(4), postblur(4) {}
+
+    std::vector<Trackbar> get_trackbars() override;
+
+    Mat draw(const cv::Mat &src) override;
 };
 
 
