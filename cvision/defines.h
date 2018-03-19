@@ -5,6 +5,8 @@
 #ifndef B3ITASSIGNMENT2_DEFINES_H
 #define B3ITASSIGNMENT2_DEFINES_H
 
+#define DEBUG true
+
 #ifdef _WIN32
 #define FILE_SEPARATOR "\\"
 #else

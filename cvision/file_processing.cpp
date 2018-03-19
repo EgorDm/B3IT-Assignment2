@@ -4,6 +4,7 @@
 
 #include "file_processing.h"
 #include "defines.h"
+#include "macros.h"
 #include <dirent.h>
 
 using namespace cvision::processing;
@@ -19,8 +20,8 @@ file::load_sample(const std::string &dataset_name, const std::string &img_name, 
     std::stringstream input_path, label_path;
     input_path << DATASETS_PATH << dataset_name << FILE_SEPARATOR << DATASET_INPUTS << img_name << ext_in;
     label_path << DATASETS_PATH << dataset_name << FILE_SEPARATOR << DATASET_LABELS << img_name << ext_lbl;
-    assert(file_exists(input_path.str()));
-    assert(file_exists(label_path.str()));
+    M_Assert(file_exists(input_path.str()), input_path.str().c_str());
+    M_Assert(file_exists(label_path.str()), label_path.str().c_str());
 
     ImageSample ret;
     ret.input = cv::imread(input_path.str(), CV_LOAD_IMAGE_COLOR);

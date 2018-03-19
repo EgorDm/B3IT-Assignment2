@@ -7,6 +7,7 @@
 
 #include <opencv2/opencv.hpp>
 #include "defines.h"
+#include "macros.h"
 
 using namespace cv;
 
@@ -30,7 +31,7 @@ namespace cvision { namespace processing { namespace image {
         explicit Histogram(cv::Mat *channels, const int channel_count, const float *channel_ranges)
                 : channel_count(channel_count), channels(channels), ranges(channel_ranges) {
             for (int i = 0; i < channel_count; ++i) {
-                assert(sum(channels[i])[0] - 1 < EPSILON);
+                M_Assert(sum(channels[i])[0] - 1 < EPSILON, "Frequency sum of a channel should be equal to 1. Please normalize.");
             }
         }
 
