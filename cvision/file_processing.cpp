@@ -41,7 +41,7 @@ file::load_dataset(const std::string &dataset_name, const bool inverted, const s
     for (const auto &file : list_dir(dataset_path.str())) {
         if (!file_exists(dataset_path.str() + file)) continue;
         auto dot_pos = file.find_last_of('.');
-        if (dot_pos == std::string::npos) continue;
+        if (dot_pos == std::string::npos || dot_pos == file.size() - 1) continue;
         auto filename = file.substr(0, dot_pos);
         if (filename.length() == 0) continue;
 

@@ -31,7 +31,6 @@ cv::Mat ComplexSegmentationWindow::draw() {
     cf_results = matrix.evaluate();
     std::cout << matrix << cf_results << std::endl;
 
-    cvtColor(postfx, postfx, COLOR_HSV2BGR);
     return postfx;
 }
 
