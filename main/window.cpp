@@ -41,3 +41,40 @@ void Window::on_mouse(int event, int x, int y, int, void *object) {
 int Window::stat_panel_height() {
     return static_cast<int>(statistics.size() * STAT_HEIGHT + STAT_MARGIN);
 }
+
+void Window::add_statistic(const Statistic &stat) {
+    statistics.push_back(stat);
+}
+
+void Window::init() {
+    for (auto helper : helpers) {
+        auto helper_stats = helper->get_statistics();
+        statistics.insert(statistics.end(), helper_stats.begin(), helper_stats.end());
+
+        for (auto trackbar : helper->get_trackbars()) {
+            auto test = std::get<0>(trackbar).size();
+            cv::createTrackbar(std::get<0>(trackbar), window_name, std::get<1>(trackbar), std::get<2>(trackbar),
+                               &Window::on_trackbar, this);
+        }
+    }
+}
+
+Window::~Window() {
+    for (int i = (int) helpers.size() - 1; i >= 0; --i) delete helpers[i];
+}
+
+void Window::on_trackbar(int newValue, void *object) {
+    ((Window *) object)->show();
+}
+
+void Window::on_click(int x, int y) {
+    bool redraw = false;
+    for(auto helper : helpers) redraw = redraw || helper->on_click(x, y);
+    if(redraw) show();
+}
+
+cv::Mat Window::draw_on(const cv::Mat &src) {
+    cv::Mat ret;
+    for(auto helper : helpers) ret = helper->draw(src);
+    return ret;
+}

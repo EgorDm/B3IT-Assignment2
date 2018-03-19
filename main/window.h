@@ -11,27 +11,48 @@
 
 
 typedef std::function<std::string()> Statistic;
+typedef std::tuple<const std::string, int *, int> Trackbar;
 
+class WindowHelper {
+public:
+    virtual std::vector<Statistic> get_statistics() { return {}; }
+
+    virtual std::vector<Trackbar> get_trackbars() { return {}; }
+
+    virtual cv::Mat draw(const cv::Mat &src) { return src; }
+
+    virtual bool on_click(int x, int y) {}
+};
 
 class Window {
 protected:
     const std::string window_name;
     std::vector<Statistic> statistics;
+    std::vector<WindowHelper *> helpers;
 
 public:
     explicit Window(const std::string &window_name);
 
+    virtual ~Window();
+
+    virtual void init();
+
     void show();
+
+    virtual void on_click(int x, int y);
 
     static void on_mouse(int event, int x, int y, int, void *object);
 
-    virtual void on_click(int x, int y) {}
+    static void on_trackbar(int newValue, void *object);
+
+protected:
+    virtual cv::Mat draw() = 0;
+
+    virtual cv::Mat draw_on(const cv::Mat &src);
 
     int stat_panel_height();
-protected:
-    virtual void init() = 0;
 
-    virtual cv::Mat draw() = 0;
+    void add_statistic(const Statistic &stat);
 };
 
 #endif //B3ITASSIGNMENT2_WINDOW_H
