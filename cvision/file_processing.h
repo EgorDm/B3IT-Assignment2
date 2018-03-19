@@ -9,6 +9,16 @@
 #include <opencv2/opencv.hpp>
 
 namespace cvision { namespace processing { namespace file {
+    struct Dataset {
+        const std::string name;
+        const std::string ext_in;
+        const std::string ext_lbl;
+        const bool inverted;
+
+        Dataset(const std::string &name, const std::string &ext_in, const std::string &ext_lbl, const bool inverted)
+                : name(name), ext_in(ext_in), ext_lbl(ext_lbl), inverted(inverted) {}
+    };
+
     struct ImageSample {
         cv::Mat input;
         cv::Mat label;
@@ -27,8 +37,7 @@ namespace cvision { namespace processing { namespace file {
      * @param img_name
      * @return
      */
-    ImageSample load_sample(const std::string &dataset_name, const std::string &img_name, const bool inverted = false,
-                            const std::string &ext_in = ".jpg", const std::string &ext_lbl = ".png");
+    ImageSample load_sample(const Dataset &dataset, const std::string &img_name);
 
 
     /**
@@ -39,8 +48,7 @@ namespace cvision { namespace processing { namespace file {
      * @param ext_lbl
      * @return
      */
-    std::vector<file::ImageSample> load_dataset(const std::string &dataset_name, const bool inverted = false,
-                                                const std::string &ext_in = ".jpg",  const std::string &ext_lbl = ".png");
+    std::vector<file::ImageSample> load_dataset(const Dataset &dataset);
 
     /**
      * Get all files in directory

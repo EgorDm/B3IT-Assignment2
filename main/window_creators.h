@@ -8,14 +8,8 @@
 
 #include "custom_windows.h"
 
-SampleEvaluationWindow
-create_complex_seg_window(const std::string &dataset_name, const std::string &sample_name, const bool inverted,
-                          const std::string &ext_in,
-                          const std::string &ext_lbl);
+Window* create_complex_seg_window(const file::Dataset &dataset, const std::string &sample_name, bool webcam);
 
-SampleEvaluationWindow
-create_simple_seg_window(const std::string &dataset_name, const std::string &sample_name, const bool inverted,
-                         const std::string &ext_in,
-                         const std::string &ext_lbl);
+Window* create_simple_seg_window(const file::Dataset &dataset, const std::string &sample_name, bool webcam);
 
 #endif //B3ITASSIGNMENT2_WINDOW_CREATORS_H

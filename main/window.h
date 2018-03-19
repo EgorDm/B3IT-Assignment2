@@ -39,7 +39,7 @@ public:
 
     virtual void init();
 
-    void show();
+    virtual void show();
 
     virtual void on_click(int x, int y);
 

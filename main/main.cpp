@@ -9,12 +9,14 @@ using namespace cv;
 using namespace cvision::processing;
 
 int main() {
-    auto window = create_simple_seg_window("Pratheepan", "chenhao0017me9", true, ".jpg", ".png");
-    //auto window = create_complex_seg_window("Pratheepan", "chenhao0017me9", true, ".jpg", ".png");
-    //auto window = CameraWindow();
-    window.init();
-    window.show();
+    file::Dataset pratheepan("Pratheepan", ".jpg", ".png", false);//"chenhao0017me9",
+    file::Dataset hgr1("hgr1", ".jpg", ".bmp", true);//"3_P_hgr1_id01_1",
+
+    auto window = create_simple_seg_window(pratheepan, "chenhao0017me9", false);
+    window->init();
+    window->show();
 
     waitKey(0);
+    delete window;
     return 0;
 }

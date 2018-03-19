@@ -106,7 +106,5 @@ Mat SimpleSegmentationHelper::draw(const cv::Mat &src) {
     Mat postfx;
     prefx.copyTo(postfx, mask);
 
-    std::cout << "HELLLOWW" << std::endl;
-
     return postfx;
 }

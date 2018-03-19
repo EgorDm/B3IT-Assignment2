@@ -15,11 +15,10 @@ bool file::file_exists(const std::string &name) {
 }
 
 file::ImageSample
-file::load_sample(const std::string &dataset_name, const std::string &img_name, const bool inverted,
-                  const std::string &ext_in, const std::string &ext_lbl) {
+file::load_sample(const Dataset &dataset, const std::string &img_name) {
     std::stringstream input_path, label_path;
-    input_path << DATASETS_PATH << dataset_name << FILE_SEPARATOR << DATASET_INPUTS << img_name << ext_in;
-    label_path << DATASETS_PATH << dataset_name << FILE_SEPARATOR << DATASET_LABELS << img_name << ext_lbl;
+    input_path << DATASETS_PATH << dataset.name << FILE_SEPARATOR << DATASET_INPUTS << img_name << dataset.ext_in;
+    label_path << DATASETS_PATH << dataset.name << FILE_SEPARATOR << DATASET_LABELS << img_name << dataset.ext_lbl;
     M_Assert(file_exists(input_path.str()), input_path.str().c_str());
     M_Assert(file_exists(label_path.str()), label_path.str().c_str());
 
@@ -27,16 +26,15 @@ file::load_sample(const std::string &dataset_name, const std::string &img_name, 
     ret.input = cv::imread(input_path.str(), CV_LOAD_IMAGE_COLOR);
     ret.label = cv::imread(label_path.str(), CV_LOAD_IMAGE_GRAYSCALE);
 
-    if (inverted) bitwise_not(ret.label, ret.label);
+    if (dataset.inverted) bitwise_not(ret.label, ret.label);
 
     return ret;
 }
 
 std::vector<file::ImageSample>
-file::load_dataset(const std::string &dataset_name, const bool inverted, const std::string &ext_in,
-                   const std::string &ext_lbl) {
+file::load_dataset(const Dataset &dataset) {
     std::stringstream dataset_path;
-    dataset_path << DATASETS_PATH << dataset_name << FILE_SEPARATOR << DATASET_INPUTS << FILE_SEPARATOR;
+    dataset_path << DATASETS_PATH << dataset.name << FILE_SEPARATOR << DATASET_INPUTS << FILE_SEPARATOR;
     std::vector<file::ImageSample> ret;
 
     for (const auto &file : list_dir(dataset_path.str())) {
@@ -46,7 +44,7 @@ file::load_dataset(const std::string &dataset_name, const bool inverted, const s
         auto filename = file.substr(0, dot_pos);
         if (filename.length() == 0) continue;
 
-        ret.push_back(load_sample(dataset_name, filename, inverted, ext_in, ext_lbl));
+        ret.push_back(load_sample(dataset, filename));
     }
 
     return ret;
@@ -69,4 +67,3 @@ std::vector<std::string> file::list_dir(const std::string &path) {
 
     return ret;
 }
-

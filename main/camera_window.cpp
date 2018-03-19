@@ -1,4 +1,3 @@
-/*
 //
 // Created by egordm on 19-3-18.
 //
@@ -11,14 +10,24 @@ void CameraWindow::init() {
 }
 
 cv::Mat CameraWindow::draw() {
-    return frame;
+    return draw_on(frame);
 }
 
 void CameraWindow::start_loop() {
+    looping = true;
     while(true) {
         capture >> frame;
         show();
         if(cv::waitKey(30) >= 0) break;
     }
+    looping = false;
 }
-*/
+
+CameraWindow::~CameraWindow() {
+    capture.release();
+}
+
+void CameraWindow::show() {
+    if(looping) Window::show();
+    else start_loop();
+}
