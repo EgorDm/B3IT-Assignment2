@@ -49,7 +49,6 @@ create_simple_seg_window(const std::string &dataset_name, const std::string &sam
     const float ranges[3] = {180, 256, 256};
 
     auto positive_hst = image::extract_histogram(dataset_inputs, (uint) dataset.size(), ranges, dataset_masks, 128);
-    auto marginal_positive_prob = image::probability_masked_pixels(dataset_masks, (uint) dataset.size());
 
     return SampleEvaluationWindow("Simple Segmentation", {new SimpleSegmentationHelper(positive_hst)}, sample);
 }

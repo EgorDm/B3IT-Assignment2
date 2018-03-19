@@ -7,10 +7,13 @@
 
 #include "window.h"
 #include "../cvision/evaluation.h"
+#include "../cvision/file_processing.h"
 
 class CFMatrixHelper : public WindowHelper {
 public:
     cvision::evaluation::ConfusionMatrixResults cf_results{};
+
+    void evaluate(const cvision::processing::file::ImageSample &sample, const cv::Mat &prediction);
 
     std::string get_recall();
 

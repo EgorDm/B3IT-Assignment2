@@ -12,21 +12,24 @@
 #include "../cvision/file_processing.h"
 #include "../cvision/evaluation.h"
 #include "segmentation_helper.h"
+#include "window_helpers.h"
 
 using namespace cvision::processing;
 
 class SampleEvaluationWindow : public Window {
 private:
     file::ImageSample sample;
+    CFMatrixHelper *cf_helper;
+
 public:
     SampleEvaluationWindow(const std::string &window_name, const std::vector<WindowHelper *> &helpers,
                            file::ImageSample sample)
-            : Window(window_name, helpers), sample(std::move(sample)) {}
+            : Window(window_name, helpers), sample(std::move(sample)), cf_helper(new CFMatrixHelper()) {}
+
+    void init() override;
 
 protected:
-    Mat draw() override {
-        return draw_on(sample.input);
-    };
+    Mat draw() override;
 };
 
 
