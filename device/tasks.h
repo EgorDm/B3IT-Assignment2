@@ -7,6 +7,7 @@
 
 
 #include <PubSubClient.h>
+#include <Adafruit_BME280.h>
 #include "../lib/scheduler/scheduler.h"
 #include "macros.h"
 
@@ -20,7 +21,7 @@ protected:
 
 class MQTTReconnectCycle : public MQTTRoutine {
 public:
-    MQTTReconnectCycle(PubSubClient &client) : MQTTRoutine(MQTT_CONNECT_POLL_INTERVAL, client) {}
+    explicit MQTTReconnectCycle(PubSubClient &client) : MQTTRoutine(MQTT_CONNECT_POLL_INTERVAL, client) {}
 
 private:
     bool execute() override;
@@ -28,5 +29,18 @@ private:
     bool should_run(unsigned long time) override;
 };
 
+class BME20SensorRoutine : public MQTTRoutine {
+public:
+    explicit BME20SensorRoutine(PubSubClient &client) : MQTTRoutine(BME20_POLL_INTERVAL, client) {
+        if (!bme.begin()) SHOUT("BME280 sensor is not found!");
+        else started = true;
+    }
+
+private:
+    Adafruit_BME280 bme;
+    bool started = false;
+
+    bool execute() override;
+};
 
 #endif //B3ITASSIGNMENT2_TASKS_H

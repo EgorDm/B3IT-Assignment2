@@ -9,6 +9,8 @@
 
 
 void DeviceProgram::init() {
+    Wire.begin(WIRE_SDA, WIRE_SCK);
+
     config_manager.setAPName(DEFAULT_AP_SSID);
     setup_config(config_manager);
 
@@ -16,6 +18,7 @@ void DeviceProgram::init() {
     client.setCallback(std::bind(&DeviceProgram::data_recieved, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
     add_task(new MQTTReconnectCycle(client));
+    add_task(new BME20SensorRoutine(client));
 
     SHOUT(WiFi.localIP());
 }
