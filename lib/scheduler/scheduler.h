@@ -72,7 +72,7 @@ namespace internals {
          * Normal tasks are run once then deleted
          * @param time
          */
-        void tick(unsigned long time);
+        virtual void tick(unsigned long time);
 
         /**
          * Add a task to the queue. Dont forget to delete the task if task didnt fit in the queue.
