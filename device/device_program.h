@@ -10,6 +10,7 @@
 #include <PubSubClient.h>
 #include "../lib/scheduler/scheduler.h"
 #include "config.h"
+#include "tasks.h"
 
 class DeviceProgram : public internals::Scheduler {
 private:
@@ -18,14 +19,15 @@ private:
     PubSubClient client;
     ConfigManager config_manager;
 
+    SensorRoutine *sensor_routine;
+    WaterPlantRoutine *plant_routine;
+
 public:
     DeviceProgram() : server(80), client(wifi_client) {}
 
     void init();
 
     void tick(unsigned long time) override;
-
-    void connect_mqtt();
 
     void data_recieved(char* topic, byte* payload, unsigned int length);
 };
