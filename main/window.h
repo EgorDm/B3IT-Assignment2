@@ -19,7 +19,7 @@ public:
 
     virtual std::vector<Trackbar> get_trackbars() { return {}; }
 
-    virtual cv::Mat draw(const cv::Mat &src) { return src; }
+    virtual cv::Mat draw(const cv::Mat &src, const cv::Mat &original) { return src; }
 
     virtual bool on_click(int x, int y) {}
 };

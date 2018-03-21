@@ -30,7 +30,7 @@ public:
 
     std::vector<Statistic> get_statistics() override;
 
-    Mat draw(const cv::Mat &src) override;
+    Mat draw(const cv::Mat &src, const cv::Mat &original) override;
 
     std::vector<Trackbar> get_trackbars() override;
 
@@ -45,16 +45,27 @@ class SimpleSegmentationHelper : public WindowHelper {
 private:
     const image::Histogram *skin_histogram;
 public:
-    int alpha, beta, gamma, preblur, ed_size, close_size, postblur;
+    int alpha, beta, gamma;
 
     explicit SimpleSegmentationHelper(const image::Histogram *skin_histogram)
-            : skin_histogram(skin_histogram),
-              alpha(4), beta(20), gamma(5), preblur(4), ed_size(4), close_size(4), postblur(4) {}
+            : skin_histogram(skin_histogram), alpha(4), beta(20), gamma(5){}
 
     std::vector<Trackbar> get_trackbars() override;
 
-    Mat draw(const cv::Mat &src) override;
+    Mat draw(const cv::Mat &src, const cv::Mat &original) override;
 };
+
+class SegmentationPatcher : public WindowHelper {
+public:
+    int ed_size, close_size, postblur;
+
+    SegmentationPatcher() : ed_size(0),close_size(0),postblur(0) {}
+
+    std::vector<Trackbar> get_trackbars() override;
+
+    Mat draw(const cv::Mat &src, const cv::Mat &original) override;
+};
+
 
 
 #endif //B3IT_ASSIGNMENT2_SEGMENTATION_HELPER_H

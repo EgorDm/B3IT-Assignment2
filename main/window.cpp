@@ -82,6 +82,6 @@ void Window::on_click(int x, int y) {
 cv::Mat Window::draw_on(const cv::Mat &src) {
     cv::Mat ret;
     src.copyTo(ret);
-    for(auto helper : helpers) ret = helper->draw(ret);
+    for(auto helper : helpers) ret = helper->draw(ret, src);
     return ret;
 }

@@ -27,11 +27,13 @@ Window *create_complex_seg_window(const file::Dataset &dataset, const std::strin
                                             256);
     auto marginal_positive_prob = image::probability_masked_pixels(dataset_masks, (uint) dataset_images.size());
 
-    auto helper = new ComplexSegmentationHelper(positive_hst, env_hst, marginal_positive_prob);
+    std::vector<WindowHelper *> helpers = {new ComplexSegmentationHelper(positive_hst, env_hst, marginal_positive_prob),
+                                           new SegmentationPatcher()};
+
     if (webcam) {
-        return new CameraWindow("Complex Segmentation (Bayes)", {helper});
+        return new CameraWindow("Complex Segmentation (Bayes)", helpers);
     } else {
-        return new SampleEvaluationWindow("Complex Segmentation (Bayes)", {helper}, sample);
+        return new SampleEvaluationWindow("Complex Segmentation (Bayes)", helpers, sample);
     }
 }
 
@@ -54,10 +56,11 @@ Window *create_simple_seg_window(const file::Dataset &dataset, const std::string
 
     auto positive_hst = image::extract_histogram(dataset_inputs, (uint) dataset_images.size(), ranges, dataset_masks,
                                                  128);
-    auto helper = new SimpleSegmentationHelper(positive_hst);
+    std::vector<WindowHelper *> helpers = {new SimpleSegmentationHelper(positive_hst), new SegmentationPatcher()};
+
     if (webcam) {
-        return new CameraWindow("Simple Segmentation", {helper});
+        return new CameraWindow("Simple Segmentation", helpers);
     } else {
-        return new  SampleEvaluationWindow("Simple Segmentation", {new SimpleSegmentationHelper(positive_hst)}, sample);
+        return new SampleEvaluationWindow("Simple Segmentation", helpers, sample);
     }
 }
