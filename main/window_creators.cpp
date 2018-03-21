@@ -28,7 +28,6 @@ Window *create_complex_seg_window(const file::Dataset &dataset, const std::strin
     std::vector<WindowHelper *> helpers = {
             new ComplexSegmentationHelper(positive_hst, env_hst, marginal_positive_prob),
             new SegmentationPatcher(),
-            new HistogramCorrector(positive_hst, env_hst, false),
     };
 
     if (webcam) {
@@ -60,7 +59,6 @@ Window *create_simple_seg_window(const file::Dataset &dataset, const std::string
     std::vector<WindowHelper *> helpers = {
             new SimpleSegmentationHelper(positive_hst),
             new SegmentationPatcher(),
-            new HistogramCorrector(positive_hst)
     };
 
     if (webcam) {
