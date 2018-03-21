@@ -7,7 +7,7 @@
 using namespace cvision::processing;
 
 image::Histogram *image::extract_histogram(const Mat *src, const unsigned int src_count, const float ranges[],
-                                          const Mat *mask, const int binSize) {
+                                           const Mat *mask, const int binSize) {
     int channel_count = src[0].channels();
     const float *ranges_hist[channel_count];
     auto *end_ranges = new float[channel_count];
@@ -40,19 +40,19 @@ image::Histogram *image::extract_histogram(const Mat *src, const unsigned int sr
     return ret;
 }
 
-double* image::extract_dominant_color(const image::Histogram &histogram) {
+double *image::extract_dominant_color(const image::Histogram &histogram) {
     int maxes[histogram.channel_count];
     auto *ret = new double[histogram.channel_count];
 
-    for(int j = 0; j < histogram.channel_count; ++j) maxes[j] = 0;
+    for (int j = 0; j < histogram.channel_count; ++j) maxes[j] = 0;
 
     for (int i = 0; i < histogram.bin_count(); i++) {
-        for(int j = 0; j < histogram.channel_count; ++j) {
+        for (int j = 0; j < histogram.channel_count; ++j) {
             maxes[j] = histogram[j].at<float>(i) > histogram[j].at<float>(maxes[j]) ? i : maxes[j];
         }
     }
 
-    for(int j = 0; j < histogram.channel_count; ++j) {
+    for (int j = 0; j < histogram.channel_count; ++j) {
         ret[j] = (histogram.ranges[j] / histogram.bin_count()) * maxes[j];
     }
 
@@ -61,8 +61,8 @@ double* image::extract_dominant_color(const image::Histogram &histogram) {
 
 float image::probability_masked_pixels(const Mat *mask, const unsigned int src_count) {
     float ret = 0;
-    for(unsigned int i = 0; i < src_count; ++i) {
-        double masked_px  = countNonZero(mask[i]);
+    for (unsigned int i = 0; i < src_count; ++i) {
+        double masked_px = countNonZero(mask[i]);
         double all_px = (mask[i].rows * mask[i].cols);
         ret += (masked_px / all_px) / src_count;
     }
@@ -84,9 +84,9 @@ int image::Histogram::bin_pos(const double value, const int channel) const {
 }
 
 void image::Histogram::update_probability(image::HistColor value, float increment) {
-    for(int i = 0; i < channel_count; ++i) {
+    for (int i = 0; i < channel_count; ++i) {
         auto bin = bin_pos(value[i], i);
-        channels[i].at<float>(bin) += increment;
+        channels[i].at<float>(bin) = std::fmaxf(channels[i].at<float>(bin) + increment, 0);
     }
 }
 

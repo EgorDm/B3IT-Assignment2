@@ -22,9 +22,9 @@ Window *create_complex_seg_window(const file::Dataset &dataset, const std::strin
     const float ranges[3] = {256, 256, 256};
 
     auto positive_hst = image::extract_histogram(dataset_inputs, (uint) dataset_images.size(), ranges, dataset_masks,
-                                                 256);
+                                                 128);
     auto env_hst = image::extract_histogram(dataset_inputs, (uint) dataset_images.size(), ranges, dataset_masks_inv,
-                                            256);
+                                            128);
     auto marginal_positive_prob = image::probability_masked_pixels(dataset_masks, (uint) dataset_images.size());
 
     std::vector<WindowHelper *> helpers = {

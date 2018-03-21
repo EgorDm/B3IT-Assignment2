@@ -92,7 +92,8 @@ Mat SegmentationPatcher::draw(const cv::Mat &src, const cv::Mat &original) {
 
 bool HistogramCorrector::on_click(int x, int y, bool rb) {
     std::vector<Vec3d> colors;
-    float dw = (float)weight / 1000;
+    float dw = (float)(weight) / 1000;
+
     auto boundl = static_cast<int>(-std::floor(radius / 2));
     auto boundr = static_cast<int>(std::ceil((float)radius / 2));
 
@@ -110,16 +111,13 @@ bool HistogramCorrector::on_click(int x, int y, bool rb) {
     }
 
     if(positive_histogram != nullptr) {
-        for(const auto &color : colors) {
-            auto prob_before = positive_histogram->probability(color);
-            positive_histogram->update_probability(color, rb ? dw : -dw);
-        }
+        for(const auto &color : colors) positive_histogram->update_probability(color, rb ? -dw : dw);
         positive_histogram->normalize();
     }
 
     if(negative_histogram != nullptr) {
         for(const auto &color : colors)
-            negative_histogram->update_probability(color, rb ? -dw : dw);
+            negative_histogram->update_probability(color, rb ? dw : -dw);
         negative_histogram->normalize();
     }
 

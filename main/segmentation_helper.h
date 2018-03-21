@@ -78,7 +78,7 @@ public:
 
     explicit HistogramCorrector(image::Histogram *positive_histogram, image::Histogram *negative_histogram = nullptr,
                                 bool use_hsv = true)
-            : positive_histogram(positive_histogram), negative_histogram(negative_histogram), use_hsv(use_hsv), radius(3), weight(1000) {}
+            : positive_histogram(positive_histogram), negative_histogram(negative_histogram), use_hsv(use_hsv), radius(3), weight(100) {}
 
     std::vector<Trackbar> get_trackbars() override;
 

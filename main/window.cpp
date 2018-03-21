@@ -58,7 +58,6 @@ void Window::init() {
         statistics.insert(statistics.end(), helper_stats.begin(), helper_stats.end());
 
         for (auto trackbar : helper->get_trackbars()) {
-            auto test = std::get<0>(trackbar).size();
             cv::createTrackbar(std::get<0>(trackbar), window_name, std::get<1>(trackbar), std::get<2>(trackbar),
                                &Window::on_trackbar, this);
         }
