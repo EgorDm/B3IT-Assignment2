@@ -7,6 +7,7 @@
 
 void CameraWindow::init() {
     M_Assert(capture.isOpened(), "Video capture should be opened!");
+    Window::init();
 }
 
 cv::Mat CameraWindow::draw() {

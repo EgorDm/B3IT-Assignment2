@@ -76,8 +76,8 @@ std::string ComplexSegmentationHelper::get_probability2() {
 std::vector<Trackbar> SimpleSegmentationHelper::get_trackbars() {
     return {
             Trackbar("Alpha", &alpha, 40),
-            Trackbar("Beta", &alpha, 60),
-            Trackbar("Gamma", &alpha, 60),
+            Trackbar("Beta", &beta, 60),
+            Trackbar("Gamma", &gamma, 60),
             Trackbar("Pre Blur", &preblur, 30),
             Trackbar("Erode Dilate Size", &ed_size, 30),
             Trackbar("Close Size", &close_size, 30),
