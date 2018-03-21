@@ -4,6 +4,7 @@
 
 #include "segmentation_helper.h"
 #include "../cvision/segmentation.h"
+#include "../cvision/visualization.h"
 
 using namespace cvision::algorithms;
 using namespace cvision::evaluation;
@@ -14,7 +15,7 @@ Mat ComplexSegmentationHelper::draw(const cv::Mat &src, const cv::Mat &original)
     float threshold_a = ((float) threshold) / 100;
 
     auto mweight = (float) (0.5 + ((positive_marginal_prob - 0.5) * (((float) marginal_weight) / 100)));
-    return segmentation::complex_segmentation(src, *positive_hst, *negative_hst, threshold_a, mweight);
+    return segmentation::complex_segmentation(src, positive_hst, negative_hst, threshold_a, mweight);
 }
 
 std::vector<Statistic> ComplexSegmentationHelper::get_statistics() {

@@ -30,8 +30,8 @@ namespace cvision { namespace algorithms { namespace segmentation {
      * @param positive_probability
      * @return
      */
-    cv::Mat complex_segmentation(const cv::Mat &src, const Histogram &target_histogram,
-                                 const Histogram &environment_histogram, const float threshold,
+    cv::Mat complex_segmentation(const cv::Mat &src, const Histogram *target_histogram,
+                                 const Histogram *environment_histogram, const float threshold,
                                  const float &positive_probability);
 
     /**
