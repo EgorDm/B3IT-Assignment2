@@ -7,30 +7,27 @@
 
 using namespace cvision;
 
-void visualization::draw_hsv_histogram(const cvision::processing::image::Histogram &histogram, const int binSize,
+void visualization::draw_hsv_histogram(const cvision::processing::image::HistogramFlat &histogram,
                                        const int width, const int height) {
     int bin_w = cvRound((double) width / 128);
 
-    auto dominantColor = processing::image::extract_dominant_color(histogram);
+    auto dominantColor = histogram.dominat_val();
 
     Mat histImage(width, height, CV_8UC3, Scalar(0, 0, 0));
 
-    Mat hst_normalized[3];
-    normalize(histogram[0], hst_normalized[0], 0, histImage.rows, NORM_MINMAX, -1, Mat());
-    normalize(histogram[1], hst_normalized[1], 0, histImage.rows, NORM_MINMAX, -1, Mat());
-    normalize(histogram[2], hst_normalized[2], 0, histImage.rows, NORM_MINMAX, -1, Mat());
+    auto hst_normalized = histogram.channels;
 
-    for (int i = 1; i < binSize; i++) {
+    for (int i = 1; i < histogram.bin_count(); i++) {
         int previ = i - 1;
         line(histImage, Point(bin_w * (previ), height - cvRound(hst_normalized[0].at<float>(previ))),
              Point(bin_w * (i), height - cvRound(hst_normalized[0].at<float>(i))),
-             Scalar((180 / binSize) * i, 255, 255), 2, 8, 0);
+             Scalar((180 / histogram.bin_count()) * i, 255, 255), 2, 8, 0);
         line(histImage, Point(bin_w * (previ), height - cvRound(hst_normalized[1].at<float>(previ))),
              Point(bin_w * (i), height - cvRound(hst_normalized[1].at<float>(i))),
-             Scalar(dominantColor[0], (256 / binSize) * i, dominantColor[2]), 2, 8, 0);
+             Scalar(dominantColor[0], (256 / histogram.bin_count()) * i, dominantColor[2]), 2, 8, 0);
         line(histImage, Point(bin_w * (previ), height - cvRound(hst_normalized[2].at<float>(previ))),
              Point(bin_w * (i), height - cvRound(hst_normalized[2].at<float>(i))),
-             Scalar(dominantColor[0], dominantColor[1], (256 / binSize) * i), 2, 8, 0);
+             Scalar(dominantColor[0], dominantColor[1], (256 / histogram.bin_count()) * i), 2, 8, 0);
     }
 
     cvtColor(histImage, histImage, COLOR_HSV2BGR);
@@ -42,20 +39,18 @@ void visualization::show_image(const Mat &image, const std::string title) {
     imshow(title, image);
 }
 
-void visualization::draw_histogram(const cvision::processing::image::Histogram &histogram, const int binSize,
+void visualization::draw_histogram(const cvision::processing::image::HistogramFlat &histogram, const int binSize,
                                    const std::string title) {
     const int width = 512;
     const int height = 512;
     int bin_w = cvRound((double) width / 128);
 
-    auto dominantColor = processing::image::extract_dominant_color(histogram);
+    auto dominantColor = histogram.dominat_val();
 
     Mat histImage(width, height, CV_8UC3, Scalar(0, 0, 0));
 
-    Mat hst_normalized[3];
-    normalize(histogram[0], hst_normalized[0], 0, histImage.rows, NORM_MINMAX, -1, Mat());
-    normalize(histogram[1], hst_normalized[1], 0, histImage.rows, NORM_MINMAX, -1, Mat());
-    normalize(histogram[2], hst_normalized[2], 0, histImage.rows, NORM_MINMAX, -1, Mat());
+    auto hst_normalized = histogram.channels;
+
 
     for (int i = 1; i < binSize; i++) {
         int previ = i - 1;

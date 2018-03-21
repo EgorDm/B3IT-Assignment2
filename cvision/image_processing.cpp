@@ -6,7 +6,7 @@
 
 using namespace cvision::processing;
 
-image::Histogram *image::extract_histogram(const Mat *src, const unsigned int src_count, const float ranges[],
+image::HistogramFlat *image::extract_histogram(const Mat *src, const unsigned int src_count, const float ranges[],
                                            const Mat *mask, const int binSize) {
     int channel_count = src[0].channels();
     const float *ranges_hist[channel_count];
@@ -18,10 +18,6 @@ image::Histogram *image::extract_histogram(const Mat *src, const unsigned int sr
         end_ranges[i] = ranges[i];
     }
 
-    /* This needs some explaination.
-     We are splitting channels then calculating histogram because then we will get a bin_size x channel_size
-     array. Meanwhile doing it the traditional way by doing all channels at once gives bin_size ^ channel_size
-     array. I dont get the logic but sounds like the worst deal in history!*/
     auto *channels = new Mat[3];
 
     for (int i = 0; i < src_count; ++i) {
@@ -34,28 +30,40 @@ image::Histogram *image::extract_histogram(const Mat *src, const unsigned int sr
         }
     }
 
-    auto ret = new image::Histogram(channels, channel_count, end_ranges);
+    auto ret = new image::HistogramFlat(channel_count, end_ranges, channels);
     ret->normalize();
 
     return ret;
 }
 
-double *image::extract_dominant_color(const image::Histogram &histogram) {
-    int maxes[histogram.channel_count];
-    auto *ret = new double[histogram.channel_count];
 
-    for (int j = 0; j < histogram.channel_count; ++j) maxes[j] = 0;
+image::Histogram3D *
+image::extract_histogram_3d(const Mat *src, const unsigned int src_count, const float *ranges, const Mat *mask,
+                            const int binSize) {
+    int channel_count = src[0].channels();
+    const float *ranges_hist[channel_count];
+    auto *end_ranges = new float[channel_count];
 
-    for (int i = 0; i < histogram.bin_count(); i++) {
-        for (int j = 0; j < histogram.channel_count; ++j) {
-            maxes[j] = histogram[j].at<float>(i) > histogram[j].at<float>(maxes[j]) ? i : maxes[j];
-        }
+    for (int i = 0; i < channel_count; ++i) {
+        const float range_partial[] = {0, ranges[i]};
+        ranges_hist[i] = range_partial;
+        end_ranges[i] = ranges[i];
     }
 
-    for (int j = 0; j < histogram.channel_count; ++j) {
-        ret[j] = (histogram.ranges[j] / histogram.bin_count()) * maxes[j];
+    const int channels[] = {0, 1, 2};
+    const int binsizes[] = {binSize, binSize, binSize};
+    float ranges0[] = { 0, ranges[0] };
+    float ranges1[] = { 0, ranges[1] };
+    float ranges2[] = { 0, ranges[2] };
+    const float* zranges[] = { ranges0, ranges1, ranges2 };
+
+    Mat hist;
+    for (int i = 0; i < src_count; ++i) {
+        calcHist(&src[i], 1, channels, mask[i], hist, 3, binsizes, zranges, true, true);
     }
 
+    auto ret = new image::Histogram3D(channel_count, end_ranges, hist);
+    ret->normalize();
     return ret;
 }
 
@@ -69,27 +77,52 @@ float image::probability_masked_pixels(const Mat *mask, const unsigned int src_c
     return ret;
 }
 
-float image::Histogram::probability(HistColor value) const {
+float image::HistogramFlat::probability(HistColor value) const {
     float ret = 1;
     for (int i = 0; i < channel_count; ++i) ret *= intensity(i, value[i]);
     return ret;
 }
 
-float image::Histogram::intensity(int channel, double value) const {
-    return channels[channel].at<float>(bin_pos(value, channel));
-}
-
-int image::Histogram::bin_pos(const double value, const int channel) const {
-    return static_cast<int>(std::round((value / ranges[channel]) * bin_count()));
-}
-
-void image::Histogram::update_probability(image::HistColor value, float increment) {
+void image::HistogramFlat::update_probability(image::HistColor value, float increment) {
     for (int i = 0; i < channel_count; ++i) {
         auto bin = bin_pos(value[i], i);
         channels[i].at<float>(bin) = std::fmaxf(channels[i].at<float>(bin) + increment, 0);
     }
 }
 
-void image::Histogram::normalize() {
-    for (int i = 0; i < channel_count; ++i) cv::normalize(channels[i], channels[i], 1, 0, NORM_L1);
+image::HistColor image::HistogramFlat::dominat_val() const {
+    int maxes[channel_count];
+    HistColor ret;
+
+    for (int j = 0; j < channel_count; ++j) maxes[j] = 0;
+
+    for (int i = 0; i < bin_count(); i++) {
+        for (int j = 0; j < channel_count; ++j) {
+            maxes[j] = channels[j].at<float>(i) > channels[j].at<float>(maxes[j]) ? i : maxes[j];
+        }
+    }
+
+    for (int j = 0; j < channel_count; ++j) ret[j] = (ranges[j] / bin_count()) * maxes[j];
+
+    return ret;
+}
+
+float image::Histogram3D::probability(image::HistColor value) const {
+    int bins[channel_count];
+    for(int i = 0; i < channel_count; ++i) bins[i] = std::max(0, bin_pos(value[i], i) - 1);
+    return histogram.at<float>(bins);
+}
+
+float image::Histogram3D::intensity(int channel, double value) const {
+    return 0; // TODO: please dont use
+}
+
+void image::Histogram3D::update_probability(image::HistColor value, float increment) {
+    int bins[channel_count];
+    for(int i = 0; i < channel_count; ++i) bins[i] = bin_pos(value[i], i);
+    histogram.at<double>(bins) = std::fmax(histogram.at<double>(bins) + increment, 0);
+}
+
+image::HistColor image::Histogram3D::dominat_val() const {
+    return image::HistColor(); // TODO: please dont use
 }

@@ -65,7 +65,7 @@ Mat SimpleSegmentationHelper::draw(const cv::Mat &src, const cv::Mat &original) 
     Mat prefx;
     cvtColor(src, prefx, COLOR_BGR2HSV);
 
-    auto color = cvision::processing::image::extract_dominant_color(*skin_histogram);
+    auto color = skin_histogram->dominat_val();
     Scalar low(std::fmin(0, color[0] - ((double) alpha / 2)), std::fmax(0, ((double) beta / 2)),
                std::fmax(0, ((double) gamma / 2)));
     Scalar high(std::fmin(180, color[0] + ((double) alpha / 2)), std::fmin(256, 256 - ((double) beta / 2)),

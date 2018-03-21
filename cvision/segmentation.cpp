@@ -53,7 +53,7 @@ segmentation::clean_segmentation(const cv::Mat &src, const int &ksize, const int
     src.copyTo(ret);
 
     // Morphological Processing
-    if (ksize > 4) {
+    if (ksize > 3) {
         Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(ksize, ksize));
         morphologyEx(src, ret, MORPH_ERODE, kernel, Point(-1, -1), 2);
         morphologyEx(ret, ret, MORPH_DILATE, kernel, Point(-1, -1), 2);

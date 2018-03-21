@@ -15,10 +15,10 @@
 using namespace cv;
 
 namespace cvision { namespace visualization {
-    void draw_hsv_histogram(const cvision::processing::image::Histogram &histogram, const int binSize = 128,
+    void draw_hsv_histogram(const cvision::processing::image::HistogramFlat &histogram,
                             const int width = 512, const int height = 512);
 
-    void draw_histogram(const cvision::processing::image::Histogram &histogram, const int binSize = 128, const std::string title = HISTOGRAM_WINDOW);
+    void draw_histogram(const cvision::processing::image::HistogramFlat &histogram, const int binSize = 128, const std::string title = HISTOGRAM_WINDOW);
 
     void show_image(const Mat &image, const std::string title = IMAGE_WINDOW);
 }};
