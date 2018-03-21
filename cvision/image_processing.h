@@ -12,13 +12,15 @@
 using namespace cv;
 
 namespace cvision { namespace processing { namespace image {
+    using HistColor = cv::Vec3d;
+
     /**
      * Struct that contains a histogram and operantions that come along with it
      */
     struct Histogram {
         const int channel_count;
         const float *ranges;
-        const cv::Mat *channels;
+        cv::Mat *channels;
 
         Histogram() : channel_count(0), ranges(nullptr), channels(nullptr) {};
 
@@ -29,11 +31,7 @@ namespace cvision { namespace processing { namespace image {
          * @param channel_ranges the value range the bins split. 256 for rgb
          */
         explicit Histogram(cv::Mat *channels, const int channel_count, const float *channel_ranges)
-                : channel_count(channel_count), channels(channels), ranges(channel_ranges) {
-            for (int i = 0; i < channel_count; ++i) {
-                M_Assert(sum(channels[i])[0] - 1 < EPSILON, "Frequency sum of a channel should be equal to 1. Please normalize.");
-            }
-        }
+                : channel_count(channel_count), channels(channels), ranges(channel_ranges) {}
 
         virtual ~Histogram() {
             delete[] channels;
@@ -45,7 +43,7 @@ namespace cvision { namespace processing { namespace image {
          * @param value
          * @return
          */
-        float probability(const double value[]) const;
+        float probability(HistColor value) const;
 
         /**
          * Get histogram intensity
@@ -60,6 +58,26 @@ namespace cvision { namespace processing { namespace image {
          * @return
          */
         int bin_count() const { return channels[0].rows; }
+
+        /**
+         * Translate color value to a bin position
+         * @param value
+         * @param channel
+         * @return
+         */
+        int bin_pos(double value, int channel = 0) const;
+
+        /**
+         * Change probability of a color occuring
+         * @param value
+         * @param multiplier
+         */
+        void update_probability(HistColor value, float increment = 0.0001);
+
+        /*
+         * Normalize the channels to sum up to one
+         */
+        void normalize();
 
         /**
          * Channel accessor
@@ -79,7 +97,7 @@ namespace cvision { namespace processing { namespace image {
      * @return
      */
     Histogram *extract_histogram(const Mat *src, const unsigned int src_count, const float ranges[],
-                                const Mat *mask, const int binSize = 128);
+                                 const Mat *mask, const int binSize = 128);
 
     /**
      * Get marginal probability of a white pixel occuring in the image(s)
@@ -95,7 +113,8 @@ namespace cvision { namespace processing { namespace image {
      * @param histogram
      * @return
      */
-    double* extract_dominant_color(const Histogram &histogram);
+    double *extract_dominant_color(const Histogram &histogram);
+
 }}}
 
 #endif //B3ITASSIGNMENT2_IMAGE_PROCESSING_H

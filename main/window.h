@@ -21,7 +21,7 @@ public:
 
     virtual cv::Mat draw(const cv::Mat &src, const cv::Mat &original) { return src; }
 
-    virtual bool on_click(int x, int y) {}
+    virtual bool on_click(int x, int y, bool rb) {}
 };
 
 class Window {
@@ -41,7 +41,7 @@ public:
 
     virtual void show();
 
-    virtual void on_click(int x, int y);
+    virtual void on_click(int x, int y, bool rb);
 
     static void on_mouse(int event, int x, int y, int, void *object);
 

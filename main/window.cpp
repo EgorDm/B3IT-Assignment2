@@ -38,9 +38,9 @@ void Window::show() {
 }
 
 void Window::on_mouse(int event, int x, int y, int, void *object) {
-    if (event == CV_EVENT_LBUTTONDOWN) {
+    if (event == CV_EVENT_LBUTTONDOWN || event == CV_EVENT_RBUTTONDOWN) {
         auto win = ((Window *) object);
-        win->on_click(x, y - win->stat_panel_height());
+        win->on_click(x, y - win->stat_panel_height(), event == CV_EVENT_RBUTTONDOWN);
     }
 }
 
@@ -73,9 +73,12 @@ void Window::on_trackbar(int newValue, void *object) {
     ((Window *) object)->show();
 }
 
-void Window::on_click(int x, int y) {
+void Window::on_click(int x, int y, bool rb) {
     bool redraw = false;
-    for(auto helper : helpers) redraw = redraw || helper->on_click(x, y);
+    for(auto helper : helpers) {
+        if(!redraw) redraw = helper->on_click(x, y, rb);
+        else helper->on_click(x, y, rb);
+    }
     if(redraw) show();
 }
 

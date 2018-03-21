@@ -12,7 +12,7 @@ int main() {
     file::Dataset pratheepan("Pratheepan", ".jpg", ".png", false);//"chenhao0017me9",
     file::Dataset hgr1("hgr1", ".jpg", ".bmp", true);//"3_P_hgr1_id01_1",
 
-    auto window = create_simple_seg_window(pratheepan, "chenhao0017me9", false);
+    auto window = create_complex_seg_window(pratheepan, "chenhao0017me9", false);
     window->init();
     window->show();
 

@@ -27,8 +27,11 @@ Window *create_complex_seg_window(const file::Dataset &dataset, const std::strin
                                             256);
     auto marginal_positive_prob = image::probability_masked_pixels(dataset_masks, (uint) dataset_images.size());
 
-    std::vector<WindowHelper *> helpers = {new ComplexSegmentationHelper(positive_hst, env_hst, marginal_positive_prob),
-                                           new SegmentationPatcher()};
+    std::vector<WindowHelper *> helpers = {
+            new ComplexSegmentationHelper(positive_hst, env_hst, marginal_positive_prob),
+            new SegmentationPatcher(),
+            new HistogramCorrector(positive_hst, env_hst, false),
+    };
 
     if (webcam) {
         return new CameraWindow("Complex Segmentation (Bayes)", helpers);
@@ -56,7 +59,11 @@ Window *create_simple_seg_window(const file::Dataset &dataset, const std::string
 
     auto positive_hst = image::extract_histogram(dataset_inputs, (uint) dataset_images.size(), ranges, dataset_masks,
                                                  128);
-    std::vector<WindowHelper *> helpers = {new SimpleSegmentationHelper(positive_hst), new SegmentationPatcher()};
+    std::vector<WindowHelper *> helpers = {
+            new SimpleSegmentationHelper(positive_hst),
+            new SegmentationPatcher(),
+            new HistogramCorrector(positive_hst)
+    };
 
     if (webcam) {
         return new CameraWindow("Simple Segmentation", helpers);

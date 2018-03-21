@@ -12,6 +12,7 @@ add_subdirectory(cvision)
 add_subdirectory(test)
 add_subdirectory(lib)
 
+#[[
 include(CMakeListsPrivate.txt)
 
 add_custom_target(
@@ -63,3 +64,4 @@ add_custom_target(
 )
 
 add_executable(${PROJECT_NAME} ${SRC_LIST})
+]]

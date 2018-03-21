@@ -34,9 +34,10 @@ image::Histogram *image::extract_histogram(const Mat *src, const unsigned int sr
         }
     }
 
-    for (int i = 0; i < channel_count; ++i) normalize(channels[i], channels[i], 1, 0, NORM_L1);
+    auto ret = new image::Histogram(channels, channel_count, end_ranges);
+    ret->normalize();
 
-    return new image::Histogram(channels, channel_count, end_ranges);
+    return ret;
 }
 
 double* image::extract_dominant_color(const image::Histogram &histogram) {
@@ -68,13 +69,27 @@ float image::probability_masked_pixels(const Mat *mask, const unsigned int src_c
     return ret;
 }
 
-float image::Histogram::probability(const double *value) const {
+float image::Histogram::probability(HistColor value) const {
     float ret = 1;
     for (int i = 0; i < channel_count; ++i) ret *= intensity(i, value[i]);
     return ret;
 }
 
 float image::Histogram::intensity(int channel, double value) const {
-    auto bin = static_cast<int>(std::round((value / ranges[channel]) * bin_count()));
-    return channels[channel].at<float>(bin);
+    return channels[channel].at<float>(bin_pos(value, channel));
+}
+
+int image::Histogram::bin_pos(const double value, const int channel) const {
+    return static_cast<int>(std::round((value / ranges[channel]) * bin_count()));
+}
+
+void image::Histogram::update_probability(image::HistColor value, float increment) {
+    for(int i = 0; i < channel_count; ++i) {
+        auto bin = bin_pos(value[i], i);
+        channels[i].at<float>(bin) += increment;
+    }
+}
+
+void image::Histogram::normalize() {
+    for (int i = 0; i < channel_count; ++i) cv::normalize(channels[i], channels[i], 1, 0, NORM_L1);
 }

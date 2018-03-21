@@ -40,6 +40,6 @@ std::string CFMatrixHelper::get_error() {
 void CFMatrixHelper::evaluate(const cvision::processing::file::ImageSample &sample, const cv::Mat &prediction) {
     auto matrix = cvision::evaluation::make_confsion_matrix(sample.input, sample.label, prediction);
     cf_results = matrix.evaluate();
-    std::cout << matrix << cf_results << std::endl;
+    //std::cout << matrix << cf_results << std::endl;
 }
 

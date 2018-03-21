@@ -32,7 +32,7 @@ cv::Mat segmentation::complex_segmentation(const cv::Mat &src, const Histogram &
         write_row = ret.ptr<cv::Vec3b>(j);
 
         for (int i = 0; i < tmp_src.cols; ++i) {
-            const double color[3] = {(double) read_row[i][0], (double) read_row[i][1], (double) read_row[i][2]};
+            HistColor color = {(double) read_row[i][0], (double) read_row[i][1], (double) read_row[i][2]};
             const float probability = bayes_probability(target_histogram.probability(color),
                                                         environment_histogram.probability(color), positive_probability);
             if (probability > threshold) {
