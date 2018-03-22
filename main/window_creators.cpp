@@ -4,6 +4,7 @@
 
 #include "window_creators.h"
 #include "camera_window.h"
+#include "gesture_detection_helper.h"
 
 Window *create_complex_seg_window(const file::Dataset &dataset, const std::string &sample_name, bool webcam,
                                   const std::string &save_name) {
@@ -58,9 +59,12 @@ Window *create_complex_seg_window(const file::Dataset &dataset, const std::strin
         }
     }
 
+    auto patcher =  new SegmentationPatcher();
+
     std::vector<WindowHelper *> helpers = {
             new ComplexSegmentationHelper(positive_hst, env_hst, marginal_positive_prob),
-            new SegmentationPatcher(),
+            patcher,
+            new HandDetectorHelper(patcher->mask)
     };
 
     if (webcam) {

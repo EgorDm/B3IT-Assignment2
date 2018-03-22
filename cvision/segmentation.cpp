@@ -23,7 +23,7 @@ cv::Mat segmentation::complex_segmentation(const cv::Mat &src, const Histogram *
     M_Assert(target_histogram->ranges[0] == 256, "Histogram must be RGB color space histogram");
     M_Assert(dynamic_cast<const Histogram3D*>( target_histogram ) != NULL, "Histogram must be a 3d histogram");
 
-    Mat binned_src = src / (256.0 / target_histogram->bin_count());
+    Mat binned_src = src / (257.0 / target_histogram->bin_count());
     auto target_histogram_3d = (Histogram3D*) target_histogram;
     auto env_histogram_3d = (Histogram3D*) environment_histogram;
 
