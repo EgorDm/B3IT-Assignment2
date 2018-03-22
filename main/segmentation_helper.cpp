@@ -84,7 +84,7 @@ std::vector<Trackbar> SegmentationPatcher::get_trackbars() {
 }
 
 Mat SegmentationPatcher::draw(const cv::Mat &src, const cv::Mat &original) {
-    Mat mask = segmentation::clean_segmentation(src, ed_size, close_size, (postblur % 2 == 0) ? postblur + 1 : postblur);
+    mask = segmentation::clean_segmentation(src, ed_size, close_size, (postblur % 2 == 0) ? postblur + 1 : postblur);
     Mat ret;
     original.copyTo(ret, mask);
 

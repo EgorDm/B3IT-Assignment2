@@ -16,10 +16,10 @@ namespace cvision { namespace processing { namespace image {
     using HistColor = cv::Vec3d;
 
     struct Histogram {
-        const int channel_count;
-        const float *ranges;
+        int channel_count;
+        float *ranges;
 
-        Histogram(const int channel_count, const float *ranges) : channel_count(channel_count), ranges(ranges) {}
+        Histogram(const int channel_count, float *ranges) : channel_count(channel_count), ranges(ranges) {}
 
         /**
         * Get raw probability of a color occuring
@@ -65,6 +65,10 @@ namespace cvision { namespace processing { namespace image {
         virtual void normalize() = 0;
 
         virtual HistColor dominat_val() const = 0;
+
+        virtual void write(cv::FileStorage &fs) const = 0;
+
+        virtual void read(const cv::FileNode &node) = 0;
     };
 
     /**
@@ -73,7 +77,7 @@ namespace cvision { namespace processing { namespace image {
     struct HistogramFlat : public Histogram {
         cv::Mat *channels;
 
-        HistogramFlat() : Histogram(0, 0), channels(nullptr) {};
+        HistogramFlat() : Histogram(0, nullptr), channels(nullptr) {};
 
         /**
         * Create histogram with separate channel histograms. Channels should be normalized!
@@ -81,10 +85,10 @@ namespace cvision { namespace processing { namespace image {
         * @param channel_count
         * @param channel_ranges the value range the bins split. 256 for rgb
         */
-        HistogramFlat(const int channel_count, const float *ranges, Mat *channels)
+        HistogramFlat(const int channel_count, float *ranges, Mat *channels)
                 : Histogram(channel_count, ranges), channels(channels) {}
 
-        virtual ~HistogramFlat() {
+        ~HistogramFlat() {
             delete[] channels;
             delete[] ranges;
         }
@@ -104,13 +108,23 @@ namespace cvision { namespace processing { namespace image {
         }
 
         HistColor dominat_val() const override;
+
+        void write(cv::FileStorage &fs) const override;
+
+        void read(const cv::FileNode &node) override;
     };
 
     struct Histogram3D : public Histogram {
         cv::Mat histogram;
 
-        Histogram3D(const int channel_count, const float *ranges, Mat histogram)
-                : Histogram(channel_count, ranges),  histogram(std::move(histogram)) {}
+        Histogram3D() : Histogram(0, nullptr) {}
+
+        Histogram3D(const int channel_count, float *ranges, const Mat &histogram)
+                : Histogram(channel_count, ranges), histogram(std::move(histogram)) {}
+
+        ~Histogram3D() {
+            delete[] ranges;
+        }
 
         float probability(HistColor value) const override;
 
@@ -125,6 +139,10 @@ namespace cvision { namespace processing { namespace image {
         }
 
         HistColor dominat_val() const override;
+
+        void write(cv::FileStorage &fs) const override;
+
+        void read(const cv::FileNode &node) override;
     };
 
     /**
@@ -137,10 +155,10 @@ namespace cvision { namespace processing { namespace image {
      * @return
      */
     HistogramFlat *extract_histogram(const Mat *src, const unsigned int src_count, const float ranges[],
-                                 const Mat *mask, const int binSize = 128);
+                                     const Mat *mask, const int binSize = 128);
 
     Histogram3D *extract_histogram_3d(const Mat *src, const unsigned int src_count, const float ranges[],
-                                     const Mat *mask, const int binSize = 128);
+                                      const Mat *mask, const int binSize = 128);
 
     /**
      * Get marginal probability of a white pixel occuring in the image(s)
@@ -150,7 +168,6 @@ namespace cvision { namespace processing { namespace image {
      * @return
      */
     float probability_masked_pixels(const Mat *mask, const unsigned int src_count);
-
 }}}
 
 #endif //B3ITASSIGNMENT2_IMAGE_PROCESSING_H
