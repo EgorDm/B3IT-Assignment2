@@ -8,6 +8,7 @@
 #define MQTT_CONNECT_POLL_INTERVAL 5000
 #define SENSOR_POLL_INTERVAL 2000
 #define WATER_PLANT_POLL_INTERVAL 200
+#define BUTTON_POLL_INTERVAL 20
 #define WATER_PLANT_DURATION (3000/200)
 
 #define WIRE_SCK D5
@@ -20,5 +21,6 @@
 
 #define WATER_PLANT_TOPIC "devices/assignment_device/interaction/water_plant"
 #define FORCE_SENSE_TOPIC "devices/assignment_device/interaction/force_sense"
+#define AUTOMATIC_MODE_TOPIC "devices/assignment_device/interaction/automatic_mode"
 
 #endif //DEFINES_H

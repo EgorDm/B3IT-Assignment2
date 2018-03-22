@@ -12,6 +12,7 @@ bool MQTTReconnectCycle::execute() {
         SHOUT("Succesfully connected to MQTT broker.");
         client.subscribe(WATER_PLANT_TOPIC);
         client.subscribe(FORCE_SENSE_TOPIC);
+        client.subscribe(AUTOMATIC_MODE_TOPIC);
     } else {
         SHOUT("Failexd to connect to MQTT broker. State: " + String(client.state()));
     }

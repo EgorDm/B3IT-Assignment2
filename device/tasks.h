@@ -10,6 +10,7 @@
 #include <Adafruit_BME280.h>
 #include "../lib/scheduler/scheduler.h"
 #include "macros.h"
+#include "config.h"
 
 class MQTTRoutine : public internals::RoutineTask {
 public:
@@ -55,6 +56,33 @@ public:
     bool should_run(unsigned long time) override;
 
     void start_watering() {if(ticks >= WATER_PLANT_DURATION) ticks = 0;}
+};
+
+class ButtonToggleRoutine : public MQTTRoutine {
+private:
+    bool prev_btn_val;
+    uint8_t pin;
+    bool &val;
+    const char *topic;
+public:
+    explicit ButtonToggleRoutine(PubSubClient &client, bool &val, const uint8_t pin, const char *topic)
+            : MQTTRoutine(BUTTON_POLL_INTERVAL, client), val(val), prev_btn_val(val), pin(pin), topic(topic) {};
+
+    virtual bool execute() override {
+        auto reading = digitalRead(pin) == LOW;
+        if(reading == prev_btn_val) return false;
+        prev_btn_val = reading;
+        if(reading) {
+            val = !val;
+            SHOUT(String("Toggling automatic mode manually to ") + config.automatic_mode);
+            if(topic != nullptr) {
+                const char *payload = val ? "1" : "0";
+                client.publish(topic, payload, true);
+            }
+        }
+
+        return false;
+    }
 };
 
 #endif //B3ITASSIGNMENT2_TASKS_H

@@ -17,6 +17,7 @@ struct Config {
     char tx_topic[60];
     bool enable_pw;
     bool enable_debug;
+    bool automatic_mode;
 };
 
 extern Config config;

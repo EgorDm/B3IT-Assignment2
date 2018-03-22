@@ -7,14 +7,6 @@
 #include "config.h"
 #include "tasks.h"
 
-/*
-void callback(char* topic, byte* payload, unsigned int length) {
-    SHOUT(String("Recieved topic: ") + topic);
-    SHOUT(strcmp(topic, WATER_PLANT_TOPIC));
-}
-*/
-
-
 void DeviceProgram::init() {
     Wire.begin(WIRE_SDA, WIRE_SCK);
 
@@ -30,6 +22,7 @@ void DeviceProgram::init() {
     plant_routine = new WaterPlantRoutine();
     add_task(sensor_routine);
     add_task(plant_routine);
+    add_task(new ButtonToggleRoutine(client, config.automatic_mode, D3, AUTOMATIC_MODE_TOPIC));
 
     SHOUT(WiFi.localIP());
 }
@@ -49,5 +42,8 @@ void DeviceProgram::data_recieved(char *topic, byte *payload, unsigned int lengt
     } else if (strcmp(topic, FORCE_SENSE_TOPIC) == 0) {
         SHOUT("Forcing the sensors to read.");
         sensor_routine->execute();
+    } else if (strcmp(topic, AUTOMATIC_MODE_TOPIC) == 0) {
+        config.automatic_mode = *payload == '1';
+        SHOUT(String("Toggling automatic mode to ") + config.automatic_mode);
     }
 }
