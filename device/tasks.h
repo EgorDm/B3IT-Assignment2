@@ -51,6 +51,8 @@ private:
     unsigned int ticks;
 
 public:
+    unsigned long last_watered;
+
     bool execute() override;
 
     bool should_run(unsigned long time) override;
@@ -83,6 +85,18 @@ public:
 
         return false;
     }
+};
+
+class AutomaticMaintenanceRoutine : public internals::RoutineTask {
+private:
+    WaterPlantRoutine *plant_routine;
+public:
+    explicit AutomaticMaintenanceRoutine(WaterPlantRoutine *plant_routine)
+            : RoutineTask(MAINTENANCE_POLL_INTERVAL), plant_routine(plant_routine) {}
+
+    bool execute() override;
+
+    bool should_run(unsigned long time) override;
 };
 
 #endif //B3ITASSIGNMENT2_TASKS_H

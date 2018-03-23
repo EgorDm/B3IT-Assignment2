@@ -23,6 +23,7 @@ void DeviceProgram::init() {
     add_task(sensor_routine);
     add_task(plant_routine);
     add_task(new ButtonToggleRoutine(client, config.automatic_mode, D3, AUTOMATIC_MODE_TOPIC));
+    add_task(new AutomaticMaintenanceRoutine(plant_routine));
 
     SHOUT(WiFi.localIP());
 }

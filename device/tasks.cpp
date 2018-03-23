@@ -26,20 +26,25 @@ bool MQTTReconnectCycle::should_run(unsigned long time) {
 bool SensorRoutine::execute() {
     if (!started) return true;
 
-    client.publish(TOPIC("/sensor/temperature"), String(bme.readTemperature()).c_str(), true);
-    client.publish(TOPIC("/sensor/pressure"), String(bme.readPressure() / 100.0F).c_str(), true);
-    client.publish(TOPIC("/sensor/humidity"), String(bme.readHumidity()).c_str(), true);
-
+    sensor_data.temparature = bme.readTemperature();
+    sensor_data.pressure = bme.readPressure() / 100.0F;
+    sensor_data.humidity = bme.readHumidity();
     digitalWrite(SPB_SEL, HIGH);
-    client.publish(TOPIC("/sensor/soil_moisture"), String(analogRead(SPB_ANALOG)).c_str(), true);
-
+    sensor_data.soil_moisture = analogRead(SPB_ANALOG);
     digitalWrite(SPB_SEL, LOW);
-    client.publish(TOPIC("/sensor/light"), String(analogRead(SPB_ANALOG)).c_str(), true);
+    sensor_data.light = analogRead(SPB_ANALOG);
+
+    client.publish(TOPIC("/sensor/temperature"), String(sensor_data.temparature).c_str(), true);
+    client.publish(TOPIC("/sensor/pressure"), String(sensor_data.pressure).c_str(), true);
+    client.publish(TOPIC("/sensor/humidity"), String(sensor_data.humidity).c_str(), true);
+    client.publish(TOPIC("/sensor/soil_moisture"), String(sensor_data.soil_moisture).c_str(), true);
+    client.publish(TOPIC("/sensor/light"), String(sensor_data.light).c_str(), true);
 
     return false;
 }
 
 bool WaterPlantRoutine::execute() {
+    if (ticks == 0) last_watered = millis();
     ++ticks;
 
     SHOUT("Watering the plant!");
@@ -49,4 +54,12 @@ bool WaterPlantRoutine::execute() {
 
 bool WaterPlantRoutine::should_run(unsigned long time) {
     return RoutineTask::should_run(time) && ticks < WATER_PLANT_DURATION;
+}
+
+bool AutomaticMaintenanceRoutine::execute() {
+    return false;
+}
+
+bool AutomaticMaintenanceRoutine::should_run(unsigned long time) {
+    return RoutineTask::should_run(time) && config.automatic_mode;
 }

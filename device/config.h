@@ -22,6 +22,17 @@ struct Config {
 
 extern Config config;
 
+struct SensorData {
+    float temparature;
+    float pressure;
+    float humidity;
+    int soil_moisture;
+    int light;
+};
+
+extern SensorData sensor_data;
+
+
 extern void setup_config(ConfigManager &config_manager);
 
 #endif //B3ITASSIGNMENT2_CONFIG_H
