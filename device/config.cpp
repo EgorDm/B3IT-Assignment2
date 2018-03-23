@@ -8,6 +8,8 @@
 
 Config config;
 
+SensorData sensor_data;
+
 void setup_config(ConfigManager &config_manager) {
     config_manager.addParameter("broker", config.mqtt_broker, 40);
     config_manager.addParameter("port", &config.mqtt_port);
