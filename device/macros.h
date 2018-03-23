@@ -9,9 +9,8 @@
 #define SHOUT(something) ()
 #endif
 
-#define REDIRECT(url) \
-    server.sendHeader("Location", (url), true); server.send(302, "text/plain", "");
-
 #define TOPIC(topic) (MQTT_ROOT_TOPIC + (topic)).c_str()
+
+#define SENSOR_TXT(name, value, unit) (String((name)) + (value) + String((unit)))
 
 #endif //MACROS_H

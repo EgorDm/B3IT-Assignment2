@@ -28,6 +28,8 @@ struct SensorData {
     float humidity;
     int soil_moisture;
     int light;
+    unsigned long last_watered;
+    int water_ticks;
 };
 
 extern SensorData sensor_data;

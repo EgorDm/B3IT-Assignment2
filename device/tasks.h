@@ -8,6 +8,8 @@
 
 #include <PubSubClient.h>
 #include <Adafruit_BME280.h>
+#include <SSD1306Wire.h>
+#include <OLEDDisplayUi.h>
 #include "../lib/scheduler/scheduler.h"
 #include "macros.h"
 #include "config.h"
@@ -46,18 +48,15 @@ private:
 
 class WaterPlantRoutine : public internals::RoutineTask {
 public:
-    WaterPlantRoutine() : RoutineTask(WATER_PLANT_POLL_INTERVAL), ticks(WATER_PLANT_DURATION) {};
-private:
-    unsigned int ticks;
-
-public:
-    unsigned long last_watered;
+    WaterPlantRoutine() : RoutineTask(WATER_PLANT_POLL_INTERVAL) {
+        sensor_data.water_ticks = WATER_PLANT_DURATION;
+    };
 
     bool execute() override;
 
     bool should_run(unsigned long time) override;
 
-    void start_watering() {if(ticks >= WATER_PLANT_DURATION) ticks = 0;}
+    void start_watering() {if(sensor_data.water_ticks >= WATER_PLANT_DURATION) sensor_data.water_ticks = 0;}
 };
 
 class ButtonToggleRoutine : public MQTTRoutine {
@@ -98,5 +97,6 @@ public:
 
     bool should_run(unsigned long time) override;
 };
+
 
 #endif //B3ITASSIGNMENT2_TASKS_H

@@ -3,8 +3,6 @@
 //
 
 #include "tasks.h"
-#include "config.h"
-#include "../cvision/macros.h"
 
 bool MQTTReconnectCycle::execute() {
     SHOUT("Connecting to MQTT broker...");
@@ -44,8 +42,8 @@ bool SensorRoutine::execute() {
 }
 
 bool WaterPlantRoutine::execute() {
-    if (ticks == 0) last_watered = millis();
-    ++ticks;
+    if (sensor_data.water_ticks == 0) sensor_data.last_watered = millis();
+    ++sensor_data.water_ticks;
 
     SHOUT("Watering the plant!");
 
@@ -53,7 +51,7 @@ bool WaterPlantRoutine::execute() {
 }
 
 bool WaterPlantRoutine::should_run(unsigned long time) {
-    return RoutineTask::should_run(time) && ticks < WATER_PLANT_DURATION;
+    return RoutineTask::should_run(time) && sensor_data.water_ticks < WATER_PLANT_DURATION;
 }
 
 bool AutomaticMaintenanceRoutine::execute() {

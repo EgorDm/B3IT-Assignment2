@@ -3,9 +3,7 @@
 //
 
 #include "device_program.h"
-#include "macros.h"
-#include "config.h"
-#include "tasks.h"
+#include "display_task.h"
 
 void DeviceProgram::init() {
     Wire.begin(WIRE_SDA, WIRE_SCK);
@@ -24,6 +22,7 @@ void DeviceProgram::init() {
     add_task(plant_routine);
     add_task(new ButtonToggleRoutine(client, config.automatic_mode, D3, AUTOMATIC_MODE_TOPIC));
     add_task(new AutomaticMaintenanceRoutine(plant_routine));
+    add_task(new DisplayRoutine(plant_routine));
 
     SHOUT(WiFi.localIP());
 }
