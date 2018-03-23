@@ -31,7 +31,6 @@ ComplexDatasetData load_complex_dataset_data(const file::Dataset *datasets, int 
         ret.env_hst = nullptr;
         for(int i = 0; i < dataset_count; ++i) {
             auto dataset_images = file::load_dataset(datasets[i]);
-            total_images += dataset_images.size();
 
             Mat dataset_inputs[dataset_images.size()];
             Mat dataset_masks[dataset_images.size()];
@@ -58,10 +57,13 @@ ComplexDatasetData load_complex_dataset_data(const file::Dataset *datasets, int 
             else ret.env_hst->histogram += env_hst->histogram * dataset_images.size();
 
             ret.marginal_positive_prob += marginal_positive_prob * dataset_images.size();
+            total_images += dataset_images.size();
         }
-        ret.positive_hst->histogram /= total_images;
-        ret.env_hst->histogram /= total_images;
-        ret.marginal_positive_prob /= total_images;
+        ret.positive_hst->normalize();
+        //ret.positive_hst->histogram /= total_images;
+        ret.env_hst->normalize();
+        //ret.env_hst->histogram /= total_images;
+        ret.marginal_positive_prob = ret.marginal_positive_prob / total_images;
 
         {
             std::cout << "Writing " << ss.str() << std::endl;
