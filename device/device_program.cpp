@@ -44,6 +44,7 @@ void DeviceProgram::data_recieved(char *topic, byte *payload, unsigned int lengt
         sensor_routine->execute();
     } else if (strcmp(topic, AUTOMATIC_MODE_TOPIC) == 0) {
         config.automatic_mode = *payload == '1';
+        digitalWrite(BUILTIN_LED, config.automatic_mode ? HIGH : LOW);
         SHOUT(String("Toggling automatic mode to ") + config.automatic_mode);
     }
 }

@@ -20,7 +20,7 @@
 #define DISPLAY_INTERVAL 30
 #define DISPLAY_FRAME_SLIDE_TICKS (5000/DISPLAY_INTERVAL)
 
-#define SPB_SEL D0
+#define SPB_SEL D1
 #define SPB_ANALOG A0
 
 #define MQTT_ROOT_TOPIC String("devices/assignment_device")
