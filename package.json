@@ -1,0 +1,27 @@
+{
+  "name": "b3itassignment2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "dependencies": {
+    "node-red-dashboard": "^2.8.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EgorDm/B3IT-Assignment2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EgorDm/B3IT-Assignment2/issues"
+  },
+  "homepage": "https://github.com/EgorDm/B3IT-Assignment2#readme"
+}
