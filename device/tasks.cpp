@@ -6,11 +6,13 @@
 
 bool MQTTReconnectCycle::execute() {
     SHOUT("Connecting to MQTT broker...");
-    if (client.connect("", config.mqtt_username, config.mqtt_password)) {
+    if (client.connect("", config.mqtt_username, config.mqtt_password, ALIVE_TOPIC, 2, 1, "0")) {
         SHOUT("Succesfully connected to MQTT broker.");
         client.subscribe(WATER_PLANT_TOPIC);
         client.subscribe(FORCE_SENSE_TOPIC);
         client.subscribe(AUTOMATIC_MODE_TOPIC);
+
+        client.publish(ALIVE_TOPIC, "1", true);
     } else {
         SHOUT("Failexd to connect to MQTT broker. State: " + String(client.state()));
     }

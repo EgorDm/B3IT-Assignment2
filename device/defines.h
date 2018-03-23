@@ -29,4 +29,6 @@
 #define FORCE_SENSE_TOPIC "devices/assignment_device/interaction/force_sense"
 #define AUTOMATIC_MODE_TOPIC "devices/assignment_device/interaction/automatic_mode"
 
+#define ALIVE_TOPIC "devices/assignment_device/status/alive"
+
 #endif //DEFINES_H
