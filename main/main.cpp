@@ -20,7 +20,9 @@ int main() {
     //auto window = create_complex_seg_window(data, hgr1, "W_P_hgr1_id03_10", false);
     //auto window = create_complex_seg_window(data, hgr1, "3_P_hgr1_id01_1", false);
     //auto window = create_complex_seg_window(data, hgr1, "T_P_hgr1_id10_3", false);
-    auto window = create_complex_seg_window(data, pratheepan, "large_Chapman-family", false);
+    auto window = create_complex_seg_window(data, hgr1, "D_P_hgr1_id07_1", false);
+    //auto window = create_complex_seg_window(data, pratheepan, "large_Chapman-family", false);
+    //window->debug = false;
     window->init();
     window->show();
 

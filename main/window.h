@@ -29,8 +29,9 @@ protected:
     const std::string window_name;
     std::vector<Statistic> statistics;
     std::vector<WindowHelper *> helpers;
-
 public:
+    bool debug;
+
     explicit Window(const std::string &window_name);
 
     Window(const std::string &window_name, const std::vector<WindowHelper *> &helpers);

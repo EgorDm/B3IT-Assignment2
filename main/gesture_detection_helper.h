@@ -8,6 +8,11 @@
 
 #include "window.h"
 
+struct PalmCenter {
+    cv::Point center;
+    double radius;
+};
+
 class HandDetectorHelper : public WindowHelper {
 private:
     const cv::Mat &mask;

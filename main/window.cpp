@@ -8,13 +8,13 @@
 #define STAT_HEIGHT 18
 #define STAT_MARGIN 8
 
-Window::Window(const std::string &window_name) : window_name(window_name) {
+Window::Window(const std::string &window_name) : window_name(window_name), debug(true) {
     cv::namedWindow(window_name, CV_WINDOW_NORMAL);//CV_WINDOW_KEEPRATIO
     cv::setMouseCallback(window_name, &on_mouse, this);
 }
 
 Window::Window(const std::string &window_name, const std::vector<WindowHelper *> &helpers)
-        : window_name(window_name), helpers(helpers) {
+        : window_name(window_name), helpers(helpers), debug(true) {
     cv::namedWindow(window_name, CV_WINDOW_NORMAL);//CV_WINDOW_KEEPRATIO
     cv::setMouseCallback(window_name, &on_mouse, this);
 }
@@ -22,7 +22,7 @@ Window::Window(const std::string &window_name, const std::vector<WindowHelper *>
 void Window::show() {
     cv::Mat res = draw();
 
-    if (statistics.empty()) {
+    if (statistics.empty() || !debug) {
         cv::imshow(window_name, res);
         return;
     }
@@ -54,12 +54,14 @@ void Window::add_statistic(const Statistic &stat) {
 
 void Window::init() {
     for (auto helper : helpers) {
-        auto helper_stats = helper->get_statistics();
-        statistics.insert(statistics.end(), helper_stats.begin(), helper_stats.end());
+        if(debug) {
+            auto helper_stats = helper->get_statistics();
+            statistics.insert(statistics.end(), helper_stats.begin(), helper_stats.end());
 
-        for (auto trackbar : helper->get_trackbars()) {
-            cv::createTrackbar(std::get<0>(trackbar), window_name, std::get<1>(trackbar), std::get<2>(trackbar),
-                               &Window::on_trackbar, this);
+            for (auto trackbar : helper->get_trackbars()) {
+                cv::createTrackbar(std::get<0>(trackbar), window_name, std::get<1>(trackbar), std::get<2>(trackbar),
+                                   &Window::on_trackbar, this);
+            }
         }
     }
 }

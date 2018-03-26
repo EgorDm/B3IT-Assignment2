@@ -52,7 +52,7 @@ cv::Mat segmentation::complex_segmentation(const cv::Mat &src, const Histogram *
     ppos = ppos * positive_probability;
     Mat pbayes = (ppos / (ppos + (pneg * (1.0 - positive_probability))));
     Mat thresh_res, ret;
-    cv::threshold(pbayes, thresh_res, threshold, 1, THRESH_BINARY);
+    cv::threshold(pbayes, thresh_res, threshold, 255, THRESH_BINARY);
     thresh_res.convertTo(ret, CV_8U);
     return ret;
 }
