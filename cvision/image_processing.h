@@ -57,7 +57,7 @@ namespace cvision { namespace processing { namespace image {
          * @param value
          * @param multiplier
          */
-        virtual void update_probability(HistColor value, float increment) = 0;
+        virtual void update_probability(HistColor value, double probability) = 0;
 
         /*
          * Normalize the channels to sum up to one
@@ -101,7 +101,7 @@ namespace cvision { namespace processing { namespace image {
 
         int bin_count() const override { return channels[0].rows; }
 
-        void update_probability(HistColor value, float increment) override;
+        void update_probability(HistColor value, double probability) override;
 
         void normalize() override {
             for (int i = 0; i < channel_count; ++i) cv::normalize(channels[i], channels[i], 1, 0, NORM_L1);
@@ -132,7 +132,7 @@ namespace cvision { namespace processing { namespace image {
 
         int bin_count() const override { return histogram.size[0]; }
 
-        void update_probability(HistColor value, float increment) override;
+        void update_probability(HistColor value, double probability) override;
 
         void normalize() override {
             cv::normalize(histogram, histogram, 1, 0, NORM_L1);

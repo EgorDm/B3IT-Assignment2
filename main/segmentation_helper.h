@@ -67,25 +67,4 @@ public:
     Mat draw(const cv::Mat &src, const cv::Mat &original) override;
 };
 
-class HistogramCorrector : public WindowHelper {
-private:
-    image::Histogram *positive_histogram;
-    image::Histogram *negative_histogram;
-    Mat frame;
-    bool use_hsv;
-
-public:
-    int radius, weight;
-
-    explicit HistogramCorrector(image::Histogram *positive_histogram, image::Histogram *negative_histogram = nullptr,
-                                bool use_hsv = true)
-            : positive_histogram(positive_histogram), negative_histogram(negative_histogram), use_hsv(use_hsv), radius(3), weight(100) {}
-
-    std::vector<Trackbar> get_trackbars() override;
-
-    Mat draw(const cv::Mat &src, const cv::Mat &original) override;
-
-    bool on_click(int x, int y, bool rb) override;
-};
-
 #endif //B3IT_ASSIGNMENT2_SEGMENTATION_HELPER_H

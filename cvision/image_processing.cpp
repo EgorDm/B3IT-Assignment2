@@ -83,10 +83,10 @@ float image::HistogramFlat::probability(HistColor value) const {
     return ret;
 }
 
-void image::HistogramFlat::update_probability(image::HistColor value, float increment) {
+void image::HistogramFlat::update_probability(image::HistColor value, double probability) {
     for (int i = 0; i < channel_count; ++i) {
         auto bin = bin_pos(value[i], i);
-        channels[i].at<float>(bin) = std::fmaxf(channels[i].at<float>(bin) + increment, 0);
+        channels[i].at<double>(bin) = std::fmax(probability, 0);
     }
 }
 
@@ -148,10 +148,11 @@ float image::Histogram3D::intensity(int channel, double value) const {
     return 0; // TODO: please dont use
 }
 
-void image::Histogram3D::update_probability(image::HistColor value, float increment) {
+void image::Histogram3D::update_probability(image::HistColor value, double probability) {
     int bins[channel_count];
     for (int i = 0; i < channel_count; ++i) bins[i] = bin_pos(value[i], i);
-    histogram.at<double>(bins) = std::fmax(histogram.at<double>(bins) + increment, 0);
+
+    histogram.at<double>(bins) = std::fmax(probability, 0);
 }
 
 image::HistColor image::Histogram3D::dominat_val() const {
