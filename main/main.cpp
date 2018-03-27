@@ -9,10 +9,11 @@ using namespace cv;
 using namespace cvision::processing;
 
 int main() {
-    file::Dataset pratheepan("Pratheepan", ".jpg", ".png", false);//"chenhao0017me9",
+    //file::Dataset pratheepan("Pratheepan", ".jpg", ".png", false);//"chenhao0017me9",
     file::Dataset hgr1("hgr1", ".jpg", ".bmp", true);//"3_P_hgr1_id01_1",
+    file::Dataset own("own", ".jpg", ".png", false);//"3_P_hgr1_id01_1",
 
-    file::Dataset datasets[] = {pratheepan, hgr1};
+    file::Dataset datasets[] = {hgr1, own};
     auto data = load_complex_dataset_data(datasets, 2);
 
     //auto window = create_complex_seg_window(data, pratheepan, "chenhao0017me9", false);
@@ -20,7 +21,7 @@ int main() {
     //auto window = create_complex_seg_window(data, hgr1, "W_P_hgr1_id03_10", false);
     //auto window = create_complex_seg_window(data, hgr1, "3_P_hgr1_id01_1", false);
     //auto window = create_complex_seg_window(data, hgr1, "T_P_hgr1_id10_3", false);
-    auto window = create_complex_seg_window(data, hgr1, "D_P_hgr1_id07_1", false);
+    auto window = create_complex_seg_window(data, own, "egordmImage-0002", false);
     //auto window = create_complex_seg_window(data, pratheepan, "large_Chapman-family", false);
     //window->debug = false;
     window->init();
@@ -30,3 +31,4 @@ int main() {
     delete window;
     return 0;
 }
+//https://link-springer-com.proxy.library.uu.nl/content/pdf/10.1007%2Fs11042-013-1501-1.pdf

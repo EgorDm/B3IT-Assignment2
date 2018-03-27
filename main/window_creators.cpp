@@ -85,7 +85,7 @@ ComplexDatasetData load_complex_dataset_data(const file::Dataset *datasets, int 
 Window *create_complex_seg_window(ComplexDatasetData &data, const file::Dataset &dataset, const std::string &sample_name, bool webcam,
                                   const std::string &save_name) {
 
-    auto patcher =  new SegmentationPatcher();
+    auto patcher = new SegmentationPatcher();
 
     std::vector<WindowHelper *> helpers = {
             new ComplexSegmentationHelper(data.positive_hst, data.env_hst, data.marginal_positive_prob),
