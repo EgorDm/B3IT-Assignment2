@@ -2,7 +2,6 @@
 // Created by egordm on 22-3-2018.
 //
 
-#include <c++/7.3.0/chrono>
 #include "gesture_detection_helper.h"
 #include "../cvision/math.hpp"
 #include "../cvision/visualization.h"
@@ -12,9 +11,12 @@ using namespace cv;
 
 
 #define MAX_FINGER_DEPTH_ANGLE 90
-#define MIN_FINGER_CURVATURE 80
+#define MAX_FINGER_CURVATURE 80
+#define MAX_FINGER_CURVATURE_FALLBACK 60
 #define EPSILON_DEPTH 20
+#define EPSILON_DIST 20
 #define K_VAL 20
+#define K_VAL_FALLBACK 20
 #define ROI_MULT 3.6
 
 PalmCenter palmCenter(const cv::Mat &src, const std::vector<cv::Point> &contour) {
@@ -66,14 +68,24 @@ kCurvaturePeak(const std::vector<cv::Point> &contour, const int pos, const int r
         int p1 = curve_around_array((int)contour.size(), i - k);
         int p3 = curve_around_array((int)contour.size(), i + k);
 
-        curv = abs(math::inner_angle(contour[p1], contour[pos], contour[p3]));
+        curv = abs(math::inner_angle(contour[p1], contour[i], contour[p3]));
         if (curv >= min_curv) continue;
+        if(contour[p1] == contour[p3] || contour[p3] == contour[i] || contour[p1] == contour[i]) continue;
 
         min_curv = curv;
-        min_curv_i = pos;
+        min_curv_i = i;
     }
 
     return {min_curv_i, min_curv};
+}
+
+int largest_contour(const std::vector<std::vector<Point>> &contours) {
+    M_Assert(!contours.empty(), "Contours should not be empty");
+    int ret = 0;
+    for(int i = 1; i < contours.size(); ++i) {
+        if (cv::contourArea(contours[i]) > cv::contourArea(contours[ret])) ret = i;
+    }
+    return ret;
 }
 
 void drawHand(const cv::Mat &src, const cv::Mat &mask, std::vector<cv::Point> contour) {
@@ -81,6 +93,25 @@ void drawHand(const cv::Mat &src, const cv::Mat &mask, std::vector<cv::Point> co
     auto palm = palmCenter(src, contour);
     cv::circle(src, palm.center, (int) palm.radius, cv::Scalar(255, 255, 0), 2);
     auto roi = palm.radius * ROI_MULT;
+
+    //TODO: cull the region of interest to the begin of the palm from the cut out area to remove the arm
+    //TODO: prefer a palm circle closer to deepest defects
+
+    // Region of interest aka Hand
+    Mat roi_mask(mask.size(), mask.type());
+    cv::circle(roi_mask, palm.center, (int) roi, cv::Scalar(255, 255, 255), -1);
+    mask.copyTo(roi_mask, roi_mask);
+
+    std::vector<std::vector<cv::Point>> roi_contours;
+    cv::findContours(roi_mask, roi_contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+    auto roi_contour = roi_contours[largest_contour(roi_contours)];
+
+    Point2f enclosing_center;
+    float enclosing_radius;
+    minEnclosingCircle(roi_contour, enclosing_center, enclosing_radius);
+    cv::circle(src, enclosing_center, (int) enclosing_radius, cv::Scalar(255, 255, 255), 2);
+
+    auto palm_to_hand_proportion = static_cast<float>(enclosing_radius / palm.radius);
 
     // Convex shizzel
     std::vector<cv::Point> hull;
@@ -91,10 +122,6 @@ void drawHand(const cv::Mat &src, const cv::Mat &mask, std::vector<cv::Point> co
     cv::drawContours(src, contours, 0, cv::Scalar(0, 0, 255));
 
     if (hull.size() <= 2) return;
-
-    Point2f enclosing_center;
-    float enclosing_radius;
-    minEnclosingCircle(hull, enclosing_center, enclosing_radius);
 
     // Defects
     std::vector<int> hullIndexes;
@@ -110,31 +137,39 @@ void drawHand(const cv::Mat &src, const cv::Mat &mask, std::vector<cv::Point> co
         auto angle = math::rad_to_deg(
                 abs(math::inner_angle(contour[defect[0]], contour[defect[2]], contour[defect[1]])));
         if (angle > MAX_FINGER_DEPTH_ANGLE) continue;
-        candidates.push_back(defect[0]);
-        candidates.push_back(defect[1]);
+
+        auto curv = math::rad_to_deg(std::get<1>(kCurvaturePeak(contour, defect[0], 15, K_VAL)));
+        if(curv < MAX_FINGER_CURVATURE) {
+            candidates.push_back(defect[0]);
+            std::cout << "Curvature: " << curv << std::endl;
+
+        }
+        curv = math::rad_to_deg(std::get<1>(kCurvaturePeak(contour, defect[1], 15, K_VAL)));
+        if(curv < MAX_FINGER_CURVATURE) {
+            candidates.push_back(defect[1]);
+            std::cout << "Curvature: " << curv << std::endl;
+
+        }
     }
 
     if (candidates.empty()) {
         for (const auto &defect : convexityDefects) {
             if (defect[3] / 256 < EPSILON_DEPTH) continue;
 
-            auto kpeak = kCurvaturePeak(contour, defect[0], 10, K_VAL);
+            auto kpeak = kCurvaturePeak(contour, defect[0], 15, K_VAL_FALLBACK);
             auto angle = math::rad_to_deg(std::get<1>(kpeak));
-            if (angle < MIN_FINGER_CURVATURE) {
-                candidates.push_back(std::get<0>(kpeak));
-            }
+            if (angle < MAX_FINGER_CURVATURE_FALLBACK) candidates.push_back(std::get<0>(kpeak));
 
-            kpeak = kCurvaturePeak(contour, defect[1], 10, K_VAL);
+            kpeak = kCurvaturePeak(contour, defect[1], 15, K_VAL_FALLBACK);
             angle = math::rad_to_deg(std::get<1>(kpeak));
-            if (angle < MIN_FINGER_CURVATURE) {
-                candidates.push_back(std::get<0>(kpeak));
-            }
+            if (angle < MAX_FINGER_CURVATURE_FALLBACK) candidates.push_back(std::get<0>(kpeak));
         }
     }
 
+
     for (const auto &point : candidates) {
         if(math::distance_sq(contour[point], palm.center) > pow(roi, 2)) continue;
-        auto kpeak = kCurvaturePeak(contour, point, 10, K_VAL);
+        auto kpeak = kCurvaturePeak(contour, point, 15, K_VAL);
         auto kpos = std::get<0>(kpeak);
         auto p1 = contour[curve_around_array((int)contour.size(), kpos - K_VAL)];
         auto p3 = contour[curve_around_array((int)contour.size(), kpos + K_VAL)];
@@ -145,6 +180,15 @@ void drawHand(const cv::Mat &src, const cv::Mat &mask, std::vector<cv::Point> co
         circle(src, p1, 2, Scalar(255, 255, 0), 2);
         circle(src,p3, 2, Scalar(255, 255, 0), 2);
     }
+
+    if(palm_to_hand_proportion > ROI_MULT*0.66) {
+        std::cout << "Palm is open" << std::endl;
+    } else if(palm_to_hand_proportion > ROI_MULT*0.54) {
+        std::cout << "Palm is half open" << std::endl;
+    } else {
+        std::cout << "Palm is closed" << std::endl;
+    }
+    std::cout << "Palm to Hand proportion: " << palm_to_hand_proportion << std::endl;
 }
 
 
