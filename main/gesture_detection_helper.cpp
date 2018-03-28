@@ -2,6 +2,7 @@
 // Created by egordm on 22-3-2018.
 //
 
+#include <c++/7.3.0/chrono>
 #include "gesture_detection_helper.h"
 #include "../cvision/math.hpp"
 #include "../cvision/visualization.h"
@@ -19,17 +20,35 @@ using namespace cv;
 #define K_VAL_FALLBACK 20
 #define ROI_MULT 3.6
 
+#define PALM_WEIGHT_POINT_EPSILON 20
+#define PALM_WEIGHT_POINT_COUNT 3
+#define PALM_WEIGHT_POINT_WEIGHT 0.05
+
 PalmCenter palmCenter(const cv::Mat &src, const std::vector<cv::Point> &contour) {
     auto brect = boundingRect(contour);
     auto epsilon = 0.01 * arcLength(contour, true);
     std::vector<cv::Point> approx;
     cv::approxPolyDP(contour, approx, epsilon, true);
 
+    std::vector<int> hullIndexes;
+    cv::convexHull(contour, hullIndexes);
+    std::vector<cv::Vec4i> convexityDefects;
+    cv::convexityDefects(contour, hullIndexes, convexityDefects);
+    std::sort(convexityDefects.begin(), convexityDefects.end(), [](Vec4i a, Vec4i b) { return a[3] > b[3]; });
+
+    std::vector<Point> weight_points;
+    for (int i = 0; i < PALM_WEIGHT_POINT_COUNT && i < convexityDefects.size(); ++i) {
+        if (convexityDefects[i][3] / 256 < PALM_WEIGHT_POINT_EPSILON) break;
+        weight_points.push_back(contour[convexityDefects[i][2]]);
+    }
+
     int max_dx = brect.width / 2, max_dy = brect.height / 2;
     int x = brect.x + max_dx, y = brect.y + max_dy;
     int step = 4;
+
     Point min_point;
     double max_dist = 0;
+    double score = 0;
     int iterations = 0;
     for (int dx = 0; dx < max_dx; dx += step) {
         for (int dy = 0; dy < max_dy; dy += step) {
@@ -38,9 +57,17 @@ PalmCenter palmCenter(const cv::Mat &src, const std::vector<cv::Point> &contour)
                     ++iterations;
                     Point pp(x + dx * px, y + dy * py);
                     double min_dist = pointPolygonTest(approx, pp, true);
-                    if (min_dist < max_dist) continue;
+                    double point_score = min_dist;
+                    for (const auto &weight_point : weight_points)
+                        point_score -=
+                                sqrt(math::distance_sq(weight_point, pp)) *
+                                PALM_WEIGHT_POINT_WEIGHT;
+
+                    //if (min_dist < max_dist) continue;
+                    if (point_score < score) continue;
                     min_point = pp;
                     max_dist = min_dist;
+                    score = point_score;
                     max_dx = static_cast<int>(brect.width / 2 - max_dist);
                     max_dy = static_cast<int>(brect.height / 2 - max_dist);
                 }
@@ -52,8 +79,8 @@ PalmCenter palmCenter(const cv::Mat &src, const std::vector<cv::Point> &contour)
 }
 
 int curve_around_array(const int size, const int pos) {
-    if(pos < 0) return size - 1 + pos;
-    if(pos >= size) return pos - size;
+    if (pos < 0) return size - 1 + pos;
+    if (pos >= size) return pos - size;
     return pos;
 }
 
@@ -65,12 +92,12 @@ kCurvaturePeak(const std::vector<cv::Point> &contour, const int pos, const int r
     double min_curv = 9999;
     double curv;
     for (int i = pos - range; i < pos + range && i < contour.size(); ++i) {
-        int p1 = curve_around_array((int)contour.size(), i - k);
-        int p3 = curve_around_array((int)contour.size(), i + k);
+        int p1 = curve_around_array((int) contour.size(), i - k);
+        int p3 = curve_around_array((int) contour.size(), i + k);
 
         curv = abs(math::inner_angle(contour[p1], contour[i], contour[p3]));
         if (curv >= min_curv) continue;
-        if(contour[p1] == contour[p3] || contour[p3] == contour[i] || contour[p1] == contour[i]) continue;
+        if (contour[p1] == contour[p3] || contour[p3] == contour[i] || contour[p1] == contour[i]) continue;
 
         min_curv = curv;
         min_curv_i = i;
@@ -82,7 +109,7 @@ kCurvaturePeak(const std::vector<cv::Point> &contour, const int pos, const int r
 int largest_contour(const std::vector<std::vector<Point>> &contours) {
     M_Assert(!contours.empty(), "Contours should not be empty");
     int ret = 0;
-    for(int i = 1; i < contours.size(); ++i) {
+    for (int i = 1; i < contours.size(); ++i) {
         if (cv::contourArea(contours[i]) > cv::contourArea(contours[ret])) ret = i;
     }
     return ret;
@@ -97,18 +124,44 @@ void drawHand(const cv::Mat &src, const cv::Mat &mask, std::vector<cv::Point> co
     //TODO: cull the region of interest to the begin of the palm from the cut out area to remove the arm
     //TODO: prefer a palm circle closer to deepest defects
 
-    // Region of interest aka Hand
-    Mat roi_mask(mask.size(), mask.type());
-    cv::circle(roi_mask, palm.center, (int) roi, cv::Scalar(255, 255, 255), -1);
-    mask.copyTo(roi_mask, roi_mask);
+    std::vector<Point> arm_border;
+    auto roi_sq = pow(roi, 2);
+    for (int i = 0; i < contour.size(); ++i) {
+        if (math::distance_sq(contour[i], palm.center) < roi_sq) continue;
 
-    std::vector<std::vector<cv::Point>> roi_contours;
-    cv::findContours(roi_mask, roi_contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
-    auto roi_contour = roi_contours[largest_contour(roi_contours)];
+        auto p1 = contour[curve_around_array((int) contour.size(), i - 1)];
+        auto p2 = contour[curve_around_array((int) contour.size(), i + 1)];
+        if (math::distance_sq(p1, palm.center) > roi_sq && math::distance_sq(p2, palm.center) > roi_sq) continue;
+        arm_border.push_back(contour[i]);
+    }
+    Point arm_border_center;
+    for (const auto &p : arm_border) arm_border_center += p;
+    arm_border_center /= (double) arm_border.size();
+
 
     Point2f enclosing_center;
     float enclosing_radius;
-    minEnclosingCircle(roi_contour, enclosing_center, enclosing_radius);
+    if(!arm_border.empty()) {
+        // Project the line twice as far to pick the pick the points after the line
+        auto arm_cut_center = palm.center + math::normalize(arm_border_center) * palm.radius * 2;
+        auto arm_cut_line_p1 = math::rotate_point(arm_cut_center, palm.center, M_PI / 2);
+        auto arm_cut_line_p2 = arm_cut_center - (arm_cut_line_p1 - arm_cut_center);
+        line(src, arm_cut_line_p2, arm_cut_line_p1, cv::Scalar(255, 0, 255), 2);
+        circle(src, palm.center, (int) roi, cv::Scalar(255, 200, 200), 2);
+
+        std::vector<Point> roi_contour;
+        for (const auto &p : contour) {
+            if (math::distance_sq(p, palm.center) < math::dist_line_sq(p, arm_cut_line_p1, arm_cut_line_p2))
+                roi_contour.push_back(p);
+        }
+        std::vector<std::vector<Point>> roi_contourz;
+        roi_contourz.push_back(roi_contour);
+        drawContours(src, roi_contourz, 0, Scalar(255, 0, 255), 2);
+        minEnclosingCircle(roi_contour, enclosing_center, enclosing_radius);
+    } else {
+        minEnclosingCircle(contour, enclosing_center, enclosing_radius);
+    }
+
     cv::circle(src, enclosing_center, (int) enclosing_radius, cv::Scalar(255, 255, 255), 2);
 
     auto palm_to_hand_proportion = static_cast<float>(enclosing_radius / palm.radius);
@@ -139,17 +192,10 @@ void drawHand(const cv::Mat &src, const cv::Mat &mask, std::vector<cv::Point> co
         if (angle > MAX_FINGER_DEPTH_ANGLE) continue;
 
         auto curv = math::rad_to_deg(std::get<1>(kCurvaturePeak(contour, defect[0], 15, K_VAL)));
-        if(curv < MAX_FINGER_CURVATURE) {
-            candidates.push_back(defect[0]);
-            std::cout << "Curvature: " << curv << std::endl;
+        if (curv < MAX_FINGER_CURVATURE) candidates.push_back(defect[0]);
 
-        }
         curv = math::rad_to_deg(std::get<1>(kCurvaturePeak(contour, defect[1], 15, K_VAL)));
-        if(curv < MAX_FINGER_CURVATURE) {
-            candidates.push_back(defect[1]);
-            std::cout << "Curvature: " << curv << std::endl;
-
-        }
+        if (curv < MAX_FINGER_CURVATURE) candidates.push_back(defect[1]);
     }
 
     if (candidates.empty()) {
@@ -166,29 +212,28 @@ void drawHand(const cv::Mat &src, const cv::Mat &mask, std::vector<cv::Point> co
         }
     }
 
-
     for (const auto &point : candidates) {
-        if(math::distance_sq(contour[point], palm.center) > pow(roi, 2)) continue;
+        if (math::distance_sq(contour[point], palm.center) > pow(roi, 2)) continue;
         auto kpeak = kCurvaturePeak(contour, point, 15, K_VAL);
         auto kpos = std::get<0>(kpeak);
-        auto p1 = contour[curve_around_array((int)contour.size(), kpos - K_VAL)];
-        auto p3 = contour[curve_around_array((int)contour.size(), kpos + K_VAL)];
+        auto p1 = contour[curve_around_array((int) contour.size(), kpos - K_VAL)];
+        auto p3 = contour[curve_around_array((int) contour.size(), kpos + K_VAL)];
 
         auto cf = (p1 + p3) / 2;
         line(src, cf, contour[kpos], Scalar(255, 255, 255), 2);
         circle(src, contour[kpos], 2, Scalar(255, 255, 255), 2);
         circle(src, p1, 2, Scalar(255, 255, 0), 2);
-        circle(src,p3, 2, Scalar(255, 255, 0), 2);
+        circle(src, p3, 2, Scalar(255, 255, 0), 2);
     }
 
-    if(palm_to_hand_proportion > ROI_MULT*0.66) {
-        std::cout << "Palm is open" << std::endl;
-    } else if(palm_to_hand_proportion > ROI_MULT*0.54) {
-        std::cout << "Palm is half open" << std::endl;
-    } else {
-        std::cout << "Palm is closed" << std::endl;
-    }
-    std::cout << "Palm to Hand proportion: " << palm_to_hand_proportion << std::endl;
+    /* if(palm_to_hand_proportion > ROI_MULT*0.66) {
+         std::cout << "Palm is open" << std::endl;
+     } else if(palm_to_hand_proportion > ROI_MULT*0.54) {
+         std::cout << "Palm is half open" << std::endl;
+     } else {
+         std::cout << "Palm is closed" << std::endl;
+     }
+     std::cout << "Palm to Hand proportion: " << palm_to_hand_proportion << std::endl;*/
 }
 
 
