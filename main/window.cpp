@@ -4,6 +4,10 @@
 
 #include <opencv/cv.hpp>
 #include "window.h"
+#include "defines.h"
+#if PERFORMANCE_MEASURE
+#include <c++/7.3.0/chrono>
+#endif
 
 #define STAT_HEIGHT 18
 #define STAT_MARGIN 8
@@ -84,8 +88,30 @@ void Window::on_click(int x, int y, bool rb) {
 }
 
 cv::Mat Window::draw_on(const cv::Mat &src) {
+#if PERFORMANCE_MEASURE
+    std::cout << "Start performance" << std::endl;
+    auto start = std::chrono::high_resolution_clock::now();
+#endif
     cv::Mat ret;
     src.copyTo(ret);
-    for(auto helper : helpers) ret = helper->draw(ret, src);
+
+    for(auto helper : helpers) {
+#if PERFORMANCE_MEASURE
+        auto start_helper = std::chrono::high_resolution_clock::now();
+#endif
+
+        ret = helper->draw(ret, src);
+
+#if PERFORMANCE_MEASURE
+        auto finish_helper = std::chrono::high_resolution_clock::now();
+        std::cout << "\tDraw performance of " << (std::string)typeid(*helper).name() << ": "
+                  << std::chrono::duration_cast<std::chrono::nanoseconds>(finish_helper-start_helper).count()/1000000.0 << "ms\n";
+#endif
+    }
+
+#if PERFORMANCE_MEASURE
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::cout << "Total Draw performance " << std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count()/1000000.0 << "ms\n";
+#endif
     return ret;
 }

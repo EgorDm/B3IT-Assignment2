@@ -1,0 +1,10 @@
+//
+// Created by egordm on 29-3-2018.
+//
+
+#ifndef B3ITASSIGNMENT2_DEFINES_H
+#define B3ITASSIGNMENT2_DEFINES_H
+
+#define PERFORMANCE_MEASURE false
+
+#endif //B3ITASSIGNMENT2_DEFINES_H

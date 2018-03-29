@@ -21,11 +21,11 @@ cv::Mat segmentation::complex_segmentation(const cv::Mat &src, const Histogram *
                                            const Histogram *environment_histogram, const float threshold,
                                            const float &positive_probability) {
     M_Assert(target_histogram->ranges[0] == 256, "Histogram must be RGB color space histogram");
-    M_Assert(dynamic_cast<const Histogram3D*>( target_histogram ) != NULL, "Histogram must be a 3d histogram");
+    M_Assert(dynamic_cast<const Histogram3D *>( target_histogram ) != NULL, "Histogram must be a 3d histogram");
 
     Mat binned_src = src / (257.0 / target_histogram->bin_count()); // 257 so it doesnt round up
-    auto target_histogram_3d = (Histogram3D*) target_histogram;
-    auto env_histogram_3d = (Histogram3D*) environment_histogram;
+    auto target_histogram_3d = (Histogram3D *) target_histogram;
+    auto env_histogram_3d = (Histogram3D *) environment_histogram;
 
     Mat ppos = Mat(src.size(), CV_32FC1);
     Mat pneg = Mat(src.size(), CV_32FC1);
@@ -34,20 +34,19 @@ cv::Mat segmentation::complex_segmentation(const cv::Mat &src, const Histogram *
     float *write_ppos;
     float *write_pneg;
 
-    for (int j = 0; j < src.rows; ++j) {
-        read_row = binned_src.ptr<const cv::Vec3b>(j);
-        write_ppos = ppos.ptr<float>(j);
-        write_pneg = pneg.ptr<float>(j);
-
-        for (int i = 0; i < src.cols; ++i) {
-            const uchar *vals = read_row[i].val;
+    read_row = binned_src.ptr<const cv::Vec3b>(0, 0);
+    write_ppos = ppos.ptr<float>(0, 0);
+    write_pneg = pneg.ptr<float>(0, 0);
+    parallel_for_(Range(0, binned_src.rows * binned_src.cols), [&](const Range &range) {
+        for (int r = range.start; r < range.end; ++r) {
+            const uchar *vals = read_row[r].val;
             int bins[target_histogram_3d->channel_count];
-            for(int k = 0; k < target_histogram_3d->channel_count; ++k) bins[k] = vals[k];
+            for (int k = 0; k < target_histogram_3d->channel_count; ++k) bins[k] = vals[k];
 
-            write_ppos[i] = target_histogram_3d->histogram.at<float>(bins);
-            write_pneg[i] = env_histogram_3d->histogram.at<float>(bins);
+            write_ppos[r] = target_histogram_3d->histogram.at<float>(bins);
+            write_pneg[r] = env_histogram_3d->histogram.at<float>(bins);
         }
-    }
+    });
 
     ppos = ppos * positive_probability;
     Mat pbayes = (ppos / (ppos + (pneg * (1.0 - positive_probability))));
@@ -74,7 +73,7 @@ segmentation::clean_segmentation(const cv::Mat &src, const int &ksize, const int
         morphologyEx(ret, ret, MORPH_CLOSE, close_element, Point(-1, -1), 2);
     }
 
-    if(blur_ksize > 0 && blur_ksize % 2 != 0) GaussianBlur(ret, ret, Size(blur_ksize, blur_ksize), 4);
+    if (blur_ksize > 0 && blur_ksize % 2 != 0) GaussianBlur(ret, ret, Size(blur_ksize, blur_ksize), 4);
 
     return ret;
 }
