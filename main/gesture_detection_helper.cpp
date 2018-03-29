@@ -91,16 +91,17 @@ kCurvaturePeak(const std::vector<cv::Point> &contour, const int pos, const int r
     int min_curv_i = pos;
     double min_curv = 9999;
     double curv;
-    for (int i = pos - range; i < pos + range && i < contour.size(); ++i) {
+    for (int i = pos - range; i < pos + range; ++i) {
         int p1 = curve_around_array((int) contour.size(), i - k);
+        int p2 = curve_around_array((int) contour.size(), i);
         int p3 = curve_around_array((int) contour.size(), i + k);
 
-        curv = abs(math::inner_angle(contour[p1], contour[i], contour[p3]));
+        curv = abs(math::inner_angle(contour[p1], contour[p2], contour[p3]));
         if (curv >= min_curv) continue;
-        if (contour[p1] == contour[p3] || contour[p3] == contour[i] || contour[p1] == contour[i]) continue;
+        if (contour[p1] == contour[p3] || contour[p3] == contour[p2] || contour[p1] == contour[p2]) continue;
 
         min_curv = curv;
-        min_curv_i = i;
+        min_curv_i = p2;
     }
 
     return {min_curv_i, min_curv};
@@ -137,7 +138,6 @@ void drawHand(const cv::Mat &src, const cv::Mat &mask, std::vector<cv::Point> co
     Point arm_border_center;
     for (const auto &p : arm_border) arm_border_center += p;
     arm_border_center /= (double) arm_border.size();
-
 
     Point2f enclosing_center;
     float enclosing_radius;
@@ -214,7 +214,7 @@ void drawHand(const cv::Mat &src, const cv::Mat &mask, std::vector<cv::Point> co
 
     for (const auto &point : candidates) {
         if (math::distance_sq(contour[point], palm.center) > pow(roi, 2)) continue;
-        auto kpeak = kCurvaturePeak(contour, point, 15, K_VAL);
+        auto kpeak = kCurvaturePeak(contour, point, 20, K_VAL);
         auto kpos = std::get<0>(kpeak);
         auto p1 = contour[curve_around_array((int) contour.size(), kpos - K_VAL)];
         auto p3 = contour[curve_around_array((int) contour.size(), kpos + K_VAL)];
@@ -253,4 +253,3 @@ cv::Mat HandDetectorHelper::draw(const cv::Mat &src, const cv::Mat &original) {
 
     return src;
 }
-
