@@ -5,7 +5,6 @@
 #ifndef B3ITASSIGNMENT2_MATH_H
 #define B3ITASSIGNMENT2_MATH_H
 
-
 #include <opencv2/core/types.hpp>
 
 
@@ -18,7 +17,7 @@ namespace cvision { namespace math {
      * @param c
      * @return Angle in radiants
      */
-    double inner_angle(const cv::Point &a, const cv::Point &b, const cv::Point &c) {
+    inline double inner_angle(const cv::Point &a, const cv::Point &b, const cv::Point &c) {
         auto diff_ab = b - a;
         auto diff_cb = b - c;
 
@@ -28,14 +27,14 @@ namespace cvision { namespace math {
         return atan2(cross, dot);
     }
 
-    double rad_to_deg(double rad) { return rad * 180.0 / M_PI;}
+    inline double rad_to_deg(double rad) { return rad * 180.0 / M_PI; }
 
-    double distance_sq(const cv::Point &a, const cv::Point &b) {
+    inline double distance_sq(const cv::Point &a, const cv::Point &b) {
         auto diff = a - b;
         return diff.ddot(diff);
     }
 
-    cv::Point closest_point_line(const cv::Point &p, const cv::Point &a, const cv::Point &b) {
+    inline cv::Point closest_point_line(const cv::Point &p, const cv::Point &a, const cv::Point &b) {
         auto ds = distance_sq(a, b);
         if (ds < 0.1) return a;
 
@@ -45,22 +44,22 @@ namespace cvision { namespace math {
         return delta * t + a;
     }
 
-    double dist_line_sq(const cv::Point &p, const cv::Point &a, const cv::Point &b) {
+    inline double dist_line_sq(const cv::Point &p, const cv::Point &a, const cv::Point &b) {
         return distance_sq(p, closest_point_line(p, a, b));
     }
 
-    double length(const cv::Point &p) {
+    inline double length(const cv::Point &p) {
         return sqrt(p.ddot(p));
     }
 
-    cv::Point normalize(const cv::Point &p) {
+    inline cv::Point normalize(const cv::Point &p) {
         auto l = length(p);
         if (l == 0) return {};
 
-        return p/l;
+        return p / l;
     }
 
-    cv::Point rotate_point(cv::Point p, const cv::Point &center, double angle) {
+    inline cv::Point rotate_point(cv::Point p, const cv::Point &center, double angle) {
         auto s = sin(angle);
         auto c = sin(angle);
 
@@ -72,9 +71,8 @@ namespace cvision { namespace math {
         auto ynew = p.x * s + p.y * c;
 
         // translate point back:
-        return {(int)(xnew + center.x), (int)(ynew + center.y)};
+        return {(int) (xnew + center.x), (int) (ynew + center.y)};
     }
-
 }}
 
 

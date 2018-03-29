@@ -5,6 +5,7 @@
 #include "window_creators.h"
 #include "camera_window.h"
 #include "gesture_detection_helper.h"
+#include "../cvision/visualization.h"
 
 ComplexDatasetData load_complex_dataset_data(const file::Dataset *datasets, int dataset_count, const std::string &save_name) {
     std::stringstream ss;
