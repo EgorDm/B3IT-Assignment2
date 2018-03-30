@@ -36,15 +36,16 @@ Hand hand::recognize_hand(const std::vector<cv::Point> &contour) {
 
     // Find the fingers
     auto candidates = find_fingers(contour, defects, hand);
-    if(candidates.empty()) candidates = find_fingers_fallback(contour, defects);
+    if (candidates.empty()) candidates = find_fingers_fallback(contour, defects);
     candidates.erase(std::remove_if(candidates.begin(), candidates.end(), [&](const CandidateFinger &candidate) {
         return math::distance_sq(contour[std::get<0>(candidate)], hand.palm_center) > pow(roi, 2);
     }), candidates.end());
-    candidates.erase(std::unique(candidates.begin(), candidates.end(), [&](const CandidateFinger &c1, const CandidateFinger &c2) {
-        return std::get<0>(c1) == std::get<0>(c2);
-    }), candidates.end());
+    candidates.erase(std::unique(candidates.begin(), candidates.end(),
+                                 [&](const CandidateFinger &c1, const CandidateFinger &c2) {
+                                     return std::get<0>(c1) == std::get<0>(c2);
+                                 }), candidates.end());
 
-    for(const auto &candidate : candidates) {
+    for (const auto &candidate : candidates) {
         const auto &finger_tip_idx = std::get<0>(candidate);
         auto p1 = contour[utils::wrap_around_array((int) contour.size(), finger_tip_idx - FINGER_K_VAL)];
         auto p2 = contour[utils::wrap_around_array((int) contour.size(), finger_tip_idx + FINGER_K_VAL)];
@@ -84,7 +85,7 @@ Circle hand::find_enclosing_circle(const std::vector<cv::Point> &contour, const 
 
     cv::Point2f enclosing_center;
     float enclosing_radius;
-    if(!arm_border.empty()) {
+    if (!arm_border.empty()) {
         cv::Point arm_border_center; // TODO: this can be done better pairing 2 points to cut outside parts 1 by one
         for (const auto &p : arm_border) arm_border_center += p;
         arm_border_center /= (double) arm_border.size();
@@ -112,8 +113,9 @@ Circle hand::find_enclosing_circle(const std::vector<cv::Point> &contour, const 
     return {enclosing_center, enclosing_radius};
 }
 
-std::vector<CandidateFinger> hand::find_fingers(const std::vector<cv::Point> &contour, const std::vector<cv::Vec4i> &defects,
-                              const Hand &hand) {
+std::vector<CandidateFinger>
+hand::find_fingers(const std::vector<cv::Point> &contour, const std::vector<cv::Vec4i> &defects,
+                   const Hand &hand) {
     // Referencing paper "Hand tracking and gesture recognition system for human-computer interaction using
     // low-cost hardware" by "Hui-Shyong Yeo, Byung-Gook Lee, Hyotaek Lim"
     // Following methods are implementation of finger regonition descibed in the paper section: 2.3.5
@@ -122,17 +124,24 @@ std::vector<CandidateFinger> hand::find_fingers(const std::vector<cv::Point> &co
         auto depth = defect[3] / 256;
         if (depth < hand.palm_radius || depth > hand.enclosing_radius) continue;
 
-        auto angle = math::rad_to_deg(abs(math::inner_angle(contour[defect[0]], contour[defect[2]], contour[defect[1]])));
+        auto angle = math::rad_to_deg(
+                abs(math::inner_angle(contour[defect[0]], contour[defect[2]], contour[defect[1]])));
         if (angle > MAX_FINGER_DEPTH_ANGLE) continue;
 
         auto curvature = utils::geometry::k_curvature_peak(contour, defect[0], 15, FINGER_K_VAL);
         auto c_angle = math::rad_to_deg(std::get<1>(curvature));
-        if (c_angle < MAX_FINGER_CURVATURE) candidates.emplace_back(std::get<0>(curvature), defect);
+        if (c_angle < MAX_FINGER_CURVATURE &&
+            math::distance_sq(contour[std::get<0>(curvature)], hand.enclosing_center) <= pow(hand.enclosing_radius, 2)) {
+            candidates.emplace_back(std::get<0>(curvature), defect);
+        }
+
 
         curvature = utils::geometry::k_curvature_peak(contour, defect[1], 15, FINGER_K_VAL);
         c_angle = math::rad_to_deg(std::get<1>(curvature));
-        if (c_angle < MAX_FINGER_CURVATURE)
+        if (c_angle < MAX_FINGER_CURVATURE &&
+                math::distance_sq(contour[std::get<0>(curvature)], hand.enclosing_center) <= pow(hand.enclosing_radius, 2)) {
             candidates.push_back({std::get<0>(curvature), {defect[1], defect[0], defect[2], defect[3]}});
+        }
     }
 
     return candidates;
