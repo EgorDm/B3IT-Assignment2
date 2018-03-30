@@ -87,11 +87,13 @@ Window *create_complex_seg_window(ComplexDatasetData &data, const file::Dataset 
                                   const std::string &save_name) {
 
     auto patcher = new SegmentationPatcher();
+    auto face_detect = new FaceDetectorHelper();
 
     std::vector<WindowHelper *> helpers = {
             new ComplexSegmentationHelper(data.positive_hst, data.env_hst, data.marginal_positive_prob),
             patcher,
-            new HandDetectorHelper(patcher->mask)
+            face_detect,
+            new HandDetectorHelper(patcher->mask, &face_detect->faces),
     };
 
     if (webcam) {
