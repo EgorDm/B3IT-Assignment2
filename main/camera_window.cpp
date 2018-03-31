@@ -18,6 +18,7 @@ void CameraWindow::start_loop() {
     looping = true;
     while(true) {
         capture >> frame;
+        cv::flip(frame, frame, 1);
         show();
         if(cv::waitKey(30) >= 0) break;
     }

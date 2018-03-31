@@ -2,6 +2,7 @@
 // Created by egordm on 15-3-2018.
 //
 
+#include <c++/7.3.0/chrono>
 #include "segmentation.h"
 #include "visualization.h"
 #include "evaluation.h"
@@ -27,32 +28,27 @@ cv::Mat segmentation::complex_segmentation(const cv::Mat &src, const Histogram *
     auto target_histogram_3d = (Histogram3D *) target_histogram;
     auto env_histogram_3d = (Histogram3D *) environment_histogram;
 
-    Mat ppos = Mat(src.size(), CV_32FC1);
-    Mat pneg = Mat(src.size(), CV_32FC1);
+    Mat ret = Mat::zeros(src.size(), CV_8U);
 
     const cv::Vec3b *read_row;
-    float *write_ppos;
-    float *write_pneg;
+    char *write_ret;
 
     read_row = binned_src.ptr<const cv::Vec3b>(0, 0);
-    write_ppos = ppos.ptr<float>(0, 0);
-    write_pneg = pneg.ptr<float>(0, 0);
+    write_ret = ret.ptr<char>(0, 0);
     parallel_for_(Range(0, binned_src.rows * binned_src.cols), [&](const Range &range) {
         for (int r = range.start; r < range.end; ++r) {
             const uchar *vals = read_row[r].val;
             int bins[target_histogram_3d->channel_count];
             for (int k = 0; k < target_histogram_3d->channel_count; ++k) bins[k] = vals[k];
 
-            write_ppos[r] = target_histogram_3d->histogram.at<float>(bins);
-            write_pneg[r] = env_histogram_3d->histogram.at<float>(bins);
+            double ppos = target_histogram_3d->histogram.at<float>(bins) * positive_probability;
+            double pneg = env_histogram_3d->histogram.at<float>(bins) * (1.0 - positive_probability);
+            double pbayes = ppos / (ppos + pneg);
+
+            if(pbayes > threshold) write_ret[r] = (char)(0xFF);
         }
     });
 
-    ppos = ppos * positive_probability;
-    Mat pbayes = (ppos / (ppos + (pneg * (1.0 - positive_probability))));
-    Mat thresh_res, ret;
-    cv::threshold(pbayes, thresh_res, threshold, 255, THRESH_BINARY);
-    thresh_res.convertTo(ret, CV_8U);
     return ret;
 }
 
