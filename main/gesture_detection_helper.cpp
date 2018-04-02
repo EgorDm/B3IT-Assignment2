@@ -9,14 +9,15 @@
 
 using namespace cvision;
 using namespace cv;
+using namespace DollarRecognizer;
 
 
 cv::Mat HandDetectorHelper::draw(const cv::Mat &src, const cv::Mat &original) {
     Mat mask_final;
     mask.copyTo(mask_final);
 
-    if(faces != nullptr && !faces->empty()) {
-        for(const auto &face : *faces) {
+    if (faces != nullptr && !faces->empty()) {
+        for (const auto &face : *faces) {
             Point center(face.x + face.width / 2, face.y + face.height / 2);
             ellipse(mask_final, center, Size(face.width / 2, face.height / 2), 0, 0, 360, Scalar(0, 0, 0), -1);
         }
@@ -24,15 +25,12 @@ cv::Mat HandDetectorHelper::draw(const cv::Mat &src, const cv::Mat &original) {
 
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(mask_final, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+    contours.erase(std::remove_if(contours.begin(), contours.end(), [](const std::vector<cv::Point> &contour) {
+        return cv::contourArea(contour) < MIN_HAND_AREA;
+    }), contours.end());
 
-    // TODO: find some other way like proportion to image size to support multiple hands
-    int largestContour = 0;
-    for (int i = 1; i < contours.size(); i++) {
-        if (cv::contourArea(contours[i]) > cv::contourArea(contours[largestContour])) largestContour = i;
-    }
-
-    if (!contours.empty()) {
-        auto hand = processing::limb_recognition::hand::recognize_hand(contours[largestContour]);
+    for (const auto &contour : contours) {
+        auto hand = processing::limb_recognition::hand::recognize_hand(contour);
         circle(src, hand.palm_center, (int) hand.palm_radius, Scalar(255, 255, 255), 2);
         circle(src, hand.enclosing_center, (int) hand.enclosing_radius, Scalar(255, 255, 200), 2);
 
@@ -55,14 +53,14 @@ FaceDetectorHelper::FaceDetectorHelper() {
 }
 
 Mat FaceDetectorHelper::draw(const cv::Mat &src, const cv::Mat &original) {
-    if(!inited) return src;
+    if (!inited) return src;
     Mat frame_gray;
     faces.clear();
 
     cvtColor(original, frame_gray, COLOR_BGR2GRAY);
     equalizeHist(frame_gray, frame_gray);
 
-    face_cascade.detectMultiScale(frame_gray, faces, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));
+    face_cascade.detectMultiScale(frame_gray, faces, 1.3, 2, 0 | CASCADE_SCALE_IMAGE, Size(35, 35));
 
     for (const auto &face : faces) {
         Point center(face.x + face.width / 2, face.y + face.height / 2);
@@ -71,3 +69,41 @@ Mat FaceDetectorHelper::draw(const cv::Mat &src, const cv::Mat &original) {
 
     return src;
 }
+
+GestureDetectionHelper::GestureDetectionHelper(const std::vector<std::string> &active_templates) {
+    recognizer.loadTemplates();
+    recognizer.activateTemplates(active_templates);
+}
+
+bool GestureDetectionHelper::on_click(int x, int y, bool rb) {
+    if (!rb) drawing = true;
+    if (!drawing) return false;
+
+    if(!rb) {
+        Point2D pos(x, y);
+        const auto pit = std::find_if(positions.begin(), positions.end(), [&pos](const Point2D &op) {
+            return pos.x == op.x && pos.y == op.y;
+        });
+        if(pit == positions.end()) positions.emplace_back(pos);
+    }
+    if(rb) {
+        drawing = false;
+        auto res = recognizer.recognize(positions);
+        result = new RecognitionResult(res);
+        std::cout << "Result: " << result->name << " Score: " << result->score << std::endl;
+        positions.clear();
+    }
+
+    return true;
+}
+
+Mat GestureDetectionHelper::draw(const cv::Mat &src, const cv::Mat &original) {
+    for(int i = 1; i < positions.size(); ++i) {
+        auto p1 = positions[i-1];
+        auto p2 = positions[i];
+        line(src, Point((int)p1.x, (int)p1.y), Point((int)p2.x, (int)p2.y), Scalar(0, 0, 255));
+    }
+
+    return src;
+}
+

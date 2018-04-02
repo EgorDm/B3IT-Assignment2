@@ -8,6 +8,9 @@
 
 #include "window.h"
 #include "../cvision/defines.h"
+#include "../dollar_recognizer/GeometricRecognizer.h"
+
+#define MIN_HAND_AREA 4000
 
 class HandDetectorHelper : public WindowHelper {
 private:
@@ -31,6 +34,24 @@ public:
     std::vector<cv::Rect> faces;
 
     FaceDetectorHelper();
+
+    cv::Mat draw(const cv::Mat &src, const cv::Mat &original) override;
+};
+
+class GestureDetectionHelper : public WindowHelper {
+private:
+    DollarRecognizer::GeometricRecognizer recognizer;
+    DollarRecognizer::Path2D positions;
+
+    bool drawing;
+public:
+    DollarRecognizer::RecognitionResult *result;
+
+    GestureDetectionHelper(const std::vector<std::string> &active_templates);
+
+    virtual ~GestureDetectionHelper() { delete result; }
+
+    bool on_click(int x, int y, bool rb) override;
 
     cv::Mat draw(const cv::Mat &src, const cv::Mat &original) override;
 };
