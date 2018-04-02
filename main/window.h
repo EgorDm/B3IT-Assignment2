@@ -24,17 +24,40 @@ public:
     virtual bool on_click(int x, int y, bool rb) {}
 };
 
+class InputHelper : public WindowHelper {
+private:
+    cv::VideoCapture capture;
+    bool is_video{};
+public:
+    cv::Mat frame;
+
+    explicit InputHelper(cv::Mat input) : frame(std::move(input)) {}
+
+    explicit InputHelper(const std::string &source) : capture(cv::VideoCapture(source)), is_video(true){}
+
+    explicit InputHelper(const int &source_camera) : capture(cv::VideoCapture(source_camera)), is_video(true){}
+
+    cv::Mat draw(const cv::Mat &src, const cv::Mat &original) override {
+        if(is_video) {
+            capture >> frame;
+            cv::flip(frame, frame, 1);
+        }
+        return WindowHelper::draw(src, original);
+    }
+};
+
 class Window {
 protected:
     const std::string window_name;
     std::vector<Statistic> statistics;
     std::vector<WindowHelper *> helpers;
+    const InputHelper *source;
 public:
     bool debug;
 
-    explicit Window(const std::string &window_name);
+    explicit Window(const std::string &window_name, InputHelper *source);
 
-    Window(const std::string &window_name, const std::vector<WindowHelper *> &helpers);
+    Window(const std::string &window_name, InputHelper *source, const std::vector<WindowHelper *> &helpers);
 
     virtual ~Window();
 
@@ -49,7 +72,7 @@ public:
     static void on_trackbar(int newValue, void *object);
 
 protected:
-    virtual cv::Mat draw() = 0;
+    virtual cv::Mat draw();
 
     virtual cv::Mat draw_on(const cv::Mat &src);
 
@@ -57,5 +80,6 @@ protected:
 
     void add_statistic(const Statistic &stat);
 };
+
 
 #endif //B3ITASSIGNMENT2_WINDOW_H

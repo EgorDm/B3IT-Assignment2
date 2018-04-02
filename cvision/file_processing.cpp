@@ -14,25 +14,27 @@ bool file::file_exists(const std::string &name) {
     return f.good();
 }
 
-file::ImageSample
-file::load_sample(const Dataset &dataset, const std::string &img_name) {
-    std::stringstream input_path, label_path;
-    input_path << DATASETS_PATH << dataset.name << FILE_SEPARATOR << DATASET_INPUTS << img_name << dataset.ext_in;
-    label_path << DATASETS_PATH << dataset.name << FILE_SEPARATOR << DATASET_LABELS << img_name << dataset.ext_lbl;
-    M_Assert(file_exists(input_path.str()), input_path.str().c_str());
-    M_Assert(file_exists(label_path.str()), label_path.str().c_str());
+cv::Mat file::load_image(const std::vector<std::string> &path, const std::string &ext, const int &load_type) {
+    M_Assert(!path.empty(), "Path must not be empty!");
+    std::stringstream file_path;
+    file_path << DATASETS_PATH << path[0];
+    for(int i = 1; i < path.size(); ++i) file_path << FILE_SEPARATOR << path[i];
+    file_path << ext;
+    M_Assert(file_exists(file_path.str()), file_path.str().c_str());
 
-    ImageSample ret;
-    ret.input = cv::imread(input_path.str(), CV_LOAD_IMAGE_COLOR);
-    ret.label = cv::imread(label_path.str(), CV_LOAD_IMAGE_GRAYSCALE);
-
-    if (dataset.inverted) bitwise_not(ret.label, ret.label);
-
+    cv::Mat ret;
+    ret = cv::imread(file_path.str(), load_type);
     return ret;
 }
 
-std::vector<file::ImageSample>
-file::load_dataset(const Dataset &dataset) {
+file::ImageSample file::load_sample(const Dataset &dataset, const std::string &img_name) {
+    ImageSample ret;
+    ret.input = dataset.load_input(img_name);
+    ret.label = dataset.load_label(img_name);
+    return ret;
+}
+
+std::vector<file::ImageSample> file::load_dataset(const Dataset &dataset) {
     std::stringstream dataset_path;
     dataset_path << DATASETS_PATH << dataset.name << FILE_SEPARATOR << DATASET_INPUTS << FILE_SEPARATOR;
     std::vector<file::ImageSample> ret;

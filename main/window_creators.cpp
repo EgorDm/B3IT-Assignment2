@@ -3,9 +3,6 @@
 //
 
 #include "window_creators.h"
-#include "camera_window.h"
-#include "gesture_detection_helper.h"
-#include "../cvision/visualization.h"
 
 ComplexDatasetData load_complex_dataset_data(const file::Dataset *datasets, int dataset_count, const std::string &save_name) {
     std::stringstream ss;
@@ -80,56 +77,4 @@ ComplexDatasetData load_complex_dataset_data(const file::Dataset *datasets, int 
     }
 
     return ret;
-}
-
-
-Window *create_complex_seg_window(ComplexDatasetData &data, const file::Dataset &dataset, const std::string &sample_name, bool webcam,
-                                  const std::string &save_name) {
-
-    auto patcher = new SegmentationPatcher();
-    auto face_detect = new FaceDetectorHelper();
-
-    std::vector<WindowHelper *> helpers = {
-            new ComplexSegmentationHelper(data.positive_hst, data.env_hst, data.marginal_positive_prob),
-            patcher,
-            face_detect,
-            new HandDetectorHelper(patcher->mask, &face_detect->faces),
-    };
-
-    if (webcam) {
-        return new CameraWindow("Complex Segmentation (Bayes)", helpers);
-    } else {
-        auto sample = file::load_sample(dataset, sample_name);
-        return new SampleEvaluationWindow("Complex Segmentation (Bayes)", helpers, sample);
-    }
-}
-
-Window *create_simple_seg_window(const file::Dataset &dataset, const std::string &sample_name, bool webcam,
-                                 const std::string &save_name) {
-    auto dataset_images = file::load_dataset(dataset);
-    auto sample = file::load_sample(dataset, sample_name);
-
-    Mat dataset_inputs[dataset_images.size()];
-    Mat dataset_masks[dataset_images.size()];
-    Mat dataset_masks_inv[dataset_images.size()];
-
-    for (int i = 0; i < dataset_images.size(); ++i) {
-        cvtColor(dataset_images[i].input, dataset_inputs[i], COLOR_BGR2HSV);
-        dataset_masks[i] = dataset_images[i].label;
-        bitwise_not(dataset_masks[i], dataset_masks_inv[i]);
-    }
-
-    const float ranges[3] = {180, 256, 256};
-
-    auto positive_hst = image::extract_histogram(dataset_inputs, (uint) dataset_images.size(), ranges, dataset_masks, 128);
-    std::vector<WindowHelper *> helpers = {
-            new SimpleSegmentationHelper(positive_hst),
-            new SegmentationPatcher(),
-    };
-
-    if (webcam) {
-        return new CameraWindow("Simple Segmentation", helpers);
-    } else {
-        return new SampleEvaluationWindow("Simple Segmentation", helpers, sample);
-    }
 }

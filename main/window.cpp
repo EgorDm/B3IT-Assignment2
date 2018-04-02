@@ -5,6 +5,7 @@
 #include <opencv/cv.hpp>
 #include "window.h"
 #include "defines.h"
+
 #if PERFORMANCE_MEASURE
 #include <c++/7.3.0/chrono>
 #endif
@@ -12,13 +13,13 @@
 #define STAT_HEIGHT 18
 #define STAT_MARGIN 8
 
-Window::Window(const std::string &window_name) : window_name(window_name), debug(true) {
+Window::Window(const std::string &window_name, InputHelper *source) : window_name(window_name), source(source), debug(true) {
     cv::namedWindow(window_name, CV_WINDOW_NORMAL);//CV_WINDOW_KEEPRATIO
     cv::setMouseCallback(window_name, &on_mouse, this);
 }
 
-Window::Window(const std::string &window_name, const std::vector<WindowHelper *> &helpers)
-        : window_name(window_name), helpers(helpers), debug(true) {
+Window::Window(const std::string &window_name, InputHelper *source, const std::vector<WindowHelper *> &helpers)
+        : window_name(window_name), helpers(helpers), source(source), debug(true) {
     cv::namedWindow(window_name, CV_WINDOW_NORMAL);//CV_WINDOW_KEEPRATIO
     cv::setMouseCallback(window_name, &on_mouse, this);
 }
@@ -58,7 +59,7 @@ void Window::add_statistic(const Statistic &stat) {
 
 void Window::init() {
     for (auto helper : helpers) {
-        if(debug) {
+        if (debug) {
             auto helper_stats = helper->get_statistics();
             statistics.insert(statistics.end(), helper_stats.begin(), helper_stats.end());
 
@@ -80,11 +81,15 @@ void Window::on_trackbar(int newValue, void *object) {
 
 void Window::on_click(int x, int y, bool rb) {
     bool redraw = false;
-    for(auto helper : helpers) {
-        if(!redraw) redraw = helper->on_click(x, y, rb);
+    for (auto helper : helpers) {
+        if (!redraw) redraw = helper->on_click(x, y, rb);
         else helper->on_click(x, y, rb);
     }
-    if(redraw) show();
+    if (redraw) show();
+}
+
+cv::Mat Window::draw() {
+    return draw_on(source->frame);
 }
 
 cv::Mat Window::draw_on(const cv::Mat &src) {
@@ -95,13 +100,11 @@ cv::Mat Window::draw_on(const cv::Mat &src) {
     cv::Mat ret;
     src.copyTo(ret);
 
-    for(auto helper : helpers) {
+    for (auto helper : helpers) {
 #if PERFORMANCE_MEASURE
         auto start_helper = std::chrono::high_resolution_clock::now();
 #endif
-
         ret = helper->draw(ret, src);
-
 #if PERFORMANCE_MEASURE
         auto finish_helper = std::chrono::high_resolution_clock::now();
         std::cout << "\tDraw performance of " << (std::string)typeid(*helper).name() << ": "

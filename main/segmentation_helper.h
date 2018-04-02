@@ -67,4 +67,29 @@ public:
     Mat draw(const cv::Mat &src, const cv::Mat &original) override;
 };
 
+
+class CFMatrixHelper : public WindowHelper {
+private:
+    const cv::Mat &input_mask;
+    const cv::Mat &label_mask;
+public:
+    cvision::evaluation::ConfusionMatrixResults cf_results{};
+
+    CFMatrixHelper(const cv::Mat &input_mask, const cv::Mat &label_mask)
+            : input_mask(input_mask), label_mask(label_mask) {}
+
+    cv::Mat draw(const cv::Mat &src, const cv::Mat &original) override;
+
+    std::string get_recall();
+
+    std::string get_precision();
+
+    std::string get_score();
+
+    std::string get_error();
+
+    std::vector<Statistic> get_statistics() override;
+};
+
+
 #endif //B3IT_ASSIGNMENT2_SEGMENTATION_HELPER_H

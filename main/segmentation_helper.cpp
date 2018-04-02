@@ -89,3 +89,47 @@ Mat SegmentationPatcher::draw(const cv::Mat &src, const cv::Mat &original) {
     original.copyTo(ret, mask);
     return ret;
 }
+
+
+
+std::vector<Statistic> CFMatrixHelper::get_statistics() {
+    return {
+            std::bind(&CFMatrixHelper::get_recall, this),
+            std::bind(&CFMatrixHelper::get_precision, this),
+            std::bind(&CFMatrixHelper::get_score, this),
+            std::bind(&CFMatrixHelper::get_error, this)
+    };
+}
+
+std::string CFMatrixHelper::get_recall() {
+    std::stringstream ss;
+    ss << "Recall: " << cf_results.recall;
+    return ss.str();
+}
+
+std::string CFMatrixHelper::get_precision() {
+    std::stringstream ss;
+    ss << "Precision: " << cf_results.precision;
+    return ss.str();
+}
+
+std::string CFMatrixHelper::get_score() {
+    std::stringstream ss;
+    ss << "F1 score: " << cf_results.f1;
+    return ss.str();
+}
+
+std::string CFMatrixHelper::get_error() {
+    std::stringstream ss;
+    ss << "Relative error: " << cf_results.relative_error;
+    return ss.str();
+}
+
+cv::Mat CFMatrixHelper::draw(const cv::Mat &src, const cv::Mat &original) {
+    cv::Mat prediction;
+    original.copyTo(prediction, input_mask);
+
+    auto matrix = cvision::evaluation::make_confsion_matrix(original, label_mask, prediction);
+    cf_results = matrix.evaluate();
+    return src;
+}
