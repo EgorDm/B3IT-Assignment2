@@ -44,18 +44,47 @@ Hand hand::recognize_hand(const std::vector<cv::Point> &contour) {
                                  [&](const CandidateFinger &c1, const CandidateFinger &c2) {
                                      return std::get<0>(c1) == std::get<0>(c2);
                                  }), candidates.end());
+    hand.fingers = remove_duplicate_fingers(contour, candidates);
 
+    return hand;
+}
+
+std::vector<Finger> hand::remove_duplicate_fingers(const std::vector<cv::Point> &contour,
+                                                   const std::vector<CandidateFinger> &candidates) {
+    std::vector<Finger> candidate_fingers, ret;
+    // Construct fingers from candidates and calculate their width
+    double avg_finger_thickness = 0;
     for (const auto &candidate : candidates) {
         const auto &finger_tip_idx = std::get<0>(candidate);
         auto p1 = contour[utils::wrap_around_array((int) contour.size(), finger_tip_idx - FINGER_K_VAL)];
         auto p2 = contour[utils::wrap_around_array((int) contour.size(), finger_tip_idx + FINGER_K_VAL)];
         auto tip = contour[finger_tip_idx];
         auto mid = (p1 + p2) / 2;
+        avg_finger_thickness += sqrt(math::distance_sq(p1, p2));
 
-        hand.fingers.emplace_back(tip, tip - mid, false);
+        candidate_fingers.emplace_back(tip, tip - mid, false);
+    }
+    avg_finger_thickness /= candidate_fingers.empty() ? 1 : candidate_fingers.size();
+
+    // Average duplicate fingers
+    auto it = candidate_fingers.begin();
+    while(!candidate_fingers.empty()) {
+        int rival_count = 1;
+        for(int i = (int)candidate_fingers.size() - 1; i >= std::distance(it, candidate_fingers.begin()) + 1; --i) {
+            if(math::distance_sq(candidate_fingers[i].tip, it->tip) > pow(avg_finger_thickness * MIN_FINGER_DIST, 2)) continue;
+            ++rival_count;
+            it->tip += candidate_fingers[i].tip;
+            it->direction += candidate_fingers[i].direction;
+            candidate_fingers.erase(candidate_fingers.begin() + i);
+        }
+        it->tip /= rival_count;
+        it->direction /= rival_count;
+
+        ret.push_back(*it);
+        candidate_fingers.erase(it);
     }
 
-    return hand;
+    return ret;
 }
 
 Circle hand::find_palm(const std::vector<cv::Point> &contour, const std::vector<cv::Vec4i> &defects) {
