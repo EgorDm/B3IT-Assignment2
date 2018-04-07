@@ -4,6 +4,8 @@
 #include "window_creators.h"
 #include "gesture_detection_helper.h"
 #include "segmentation_helper.h"
+#include "../cvision/visualization.h"
+#include "gesture_recognition_helper.h"
 
 using namespace cv;
 using namespace cvision::processing;
@@ -20,9 +22,11 @@ using namespace cvision::processing;
 #define SOURCE_TYPE_VIDEO 1
 #define SOURCE_TYPE_IMAGE 2
 
-#define USE_SOURCE std::tuple<file::Dataset, std::string>(own, "egordmImage-0005")
-#define USE_SOURCE_TYPE SOURCE_TYPE_IMAGE
-#define USE_MASK false
+//#define USE_SOURCE std::tuple<file::Dataset, std::string>(own, "egordmImage-0005")
+#define USE_SOURCE std::tuple<file::Dataset, std::string>(videos, "2018-04-02 12-38-32")
+#define USE_SOURCE_TYPE SOURCE_TYPE_VIDEO
+#define USE_MASK true
+#define USE_OVERRIDE_MASK true
 #define USE_FACE_DETECTION true
 
 int main() {
@@ -30,7 +34,7 @@ int main() {
     file::Dataset hgr1("hgr1", ".jpg", ".bmp", true);
     file::Dataset own("own", ".jpg", ".png", false);
     file::Dataset pom("POM", ".jpg", ".png", false);
-    file::Dataset vidoes("POM", ".mp4", ".mp4", false);
+    file::Dataset videos("videos", ".mp4", ".mp4", false);
 
     file::Dataset datasets[] = {hgr1, own, pom};
     auto data = load_complex_dataset_data(datasets, 3);
@@ -41,16 +45,16 @@ int main() {
 
     InputHelper *input = new InputHelper(std::get<0>(USE_SOURCE).load_input(std::get<1>(USE_SOURCE)));
 #if USE_MASK
-    InputHelper *label = new InputHelper(std::get<0>(USE_SOURCE).load_label(std::get<1>(USE_SOURCE)));
+    InputHelper *label = new InputHelper(std::get<0>(USE_SOURCE).load_label(std::get<1>(USE_SOURCE)), USE_OVERRIDE_MASK);
 #endif
 #elif USE_SOURCE_TYPE == SOURCE_TYPE_VIDEO
     std::stringstream ss;
-    ss << std::get<0>(USE_SOURCE) << FILE_SEPARATOR << "inputs" << std::get<1>(USE_SOURCE) << ".mp4";
+    ss << DATASETS_PATH << std::get<0>(USE_SOURCE).name << FILE_SEPARATOR << "inputs" << FILE_SEPARATOR << std::get<1>(USE_SOURCE) << ".mp4";
     InputHelper *input = new InputHelper(ss.str());
 #if USE_MASK
     ss.str("");
-    ss << std::get<0>(USE_SOURCE) << FILE_SEPARATOR << "labels" << std::get<1>(USE_SOURCE) << ".mp4";
-    InputHelper *label = new InputHelper(ss.str());
+    ss << DATASETS_PATH << std::get<0>(USE_SOURCE).name << FILE_SEPARATOR << "labels" << FILE_SEPARATOR << std::get<1>(USE_SOURCE) << ".mp4";
+    InputHelper *label = new InputHelper(ss.str(), USE_OVERRIDE_MASK);
 #endif
 #else
     InputHelper *input = new InputHelper(0);
@@ -63,22 +67,34 @@ int main() {
 
     auto patcher = new SegmentationPatcher();
     auto face_detect = new FaceDetectorHelper();
+#if !USE_OVERRIDE_MASK
     helpers.push_back(new ComplexSegmentationHelper(data.positive_hst, data.env_hst, data.marginal_positive_prob));
+#endif
     helpers.push_back(patcher);
 #if USE_MASK
     helpers.push_back(new CFMatrixHelper(patcher->mask, label->frame));
 #endif
 #if USE_FACE_DETECTION
     helpers.push_back(face_detect);
-    helpers.push_back(new HandDetectorHelper(patcher->mask, &face_detect->faces));
+    auto hand_detector = new HandDetectorHelper(patcher->mask, &face_detect->faces);
+
 #else
-    helpers.push_back(new HandDetectorHelper(patcher->mask));
+    auto hand_detector = new HandDetectorHelper(patcher->mask);
 #endif
+    helpers.push_back(hand_detector);
     helpers.push_back(new GestureDetectionHelper({ "Triangle", "X", "Rectangle", "Circle" }));
+    helpers.push_back(new GestureRecognitionHelper(hand_detector));
 
     auto window = new Window("Complex Segmentation (Bayes)", input, helpers);
     window->init();
-    window->show();
+
+
+#if USE_SOURCE_TYPE == SOURCE_TYPE_VIDEO
+    while(true) {
+        window->show();
+        if(cv::waitKey(30) >= 0 || input->frame.empty()) break;
+    }
+#endif
 
     waitKey(0);
     delete window;

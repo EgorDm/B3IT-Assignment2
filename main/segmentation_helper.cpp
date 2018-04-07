@@ -85,12 +85,11 @@ std::vector<Trackbar> SegmentationPatcher::get_trackbars() {
 
 Mat SegmentationPatcher::draw(const cv::Mat &src, const cv::Mat &original) {
     mask = segmentation::clean_segmentation(src, ed_size, close_size, (postblur % 2 == 0) ? postblur + 1 : postblur);
+    if(mask.channels() > 1) cvtColor(mask, mask, COLOR_BGR2GRAY);
     Mat ret;
     original.copyTo(ret, mask);
     return ret;
 }
-
-
 
 std::vector<Statistic> CFMatrixHelper::get_statistics() {
     return {
@@ -126,10 +125,12 @@ std::string CFMatrixHelper::get_error() {
 }
 
 cv::Mat CFMatrixHelper::draw(const cv::Mat &src, const cv::Mat &original) {
-    cv::Mat prediction;
+    cv::Mat prediction, ground_truth;
     original.copyTo(prediction, input_mask);
+    label_mask.copyTo(ground_truth);
+    if(ground_truth.channels() > 1) cvtColor(ground_truth, ground_truth, COLOR_BGR2GRAY);
 
-    auto matrix = cvision::evaluation::make_confsion_matrix(original, label_mask, prediction);
+    auto matrix = cvision::evaluation::make_confsion_matrix(original, ground_truth, prediction);
     cf_results = matrix.evaluate();
     return src;
 }

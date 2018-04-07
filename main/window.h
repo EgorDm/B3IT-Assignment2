@@ -28,20 +28,28 @@ class InputHelper : public WindowHelper {
 private:
     cv::VideoCapture capture;
     bool is_video{};
+    bool output;
 public:
     cv::Mat frame;
 
-    explicit InputHelper(cv::Mat input) : frame(std::move(input)) {}
+    explicit InputHelper(cv::Mat input, const bool &output = false) : frame(std::move(input)), output(output) {}
 
-    explicit InputHelper(const std::string &source) : capture(cv::VideoCapture(source)), is_video(true){}
+    explicit InputHelper(const std::string &source, const bool &output = false)
+            : capture(cv::VideoCapture(source)), is_video(true), output(output) {
+        draw(cv::Mat(), cv::Mat());
+    }
 
-    explicit InputHelper(const int &source_camera) : capture(cv::VideoCapture(source_camera)), is_video(true){}
+    explicit InputHelper(const int &source_camera, const bool &output = false)
+            : capture(cv::VideoCapture(source_camera)), is_video(true), output(output) {
+        draw(cv::Mat(), cv::Mat());
+    }
 
     cv::Mat draw(const cv::Mat &src, const cv::Mat &original) override {
-        if(is_video) {
+        if (is_video) {
             capture >> frame;
             cv::flip(frame, frame, 1);
         }
+        if(output) return frame;
         return WindowHelper::draw(src, original);
     }
 };
@@ -51,7 +59,7 @@ protected:
     const std::string window_name;
     std::vector<Statistic> statistics;
     std::vector<WindowHelper *> helpers;
-    const InputHelper *source;
+    InputHelper *source;
 public:
     bool debug;
 
