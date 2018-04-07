@@ -9,6 +9,7 @@
 #include "window.h"
 #include "../cvision/defines.h"
 #include "../dollar_recognizer/GeometricRecognizer.h"
+#include "../cvision/hand_recognition.h"
 
 #define MIN_HAND_AREA 4000
 
@@ -17,6 +18,7 @@ private:
     const cv::Mat &mask;
     const std::vector<cv::Rect> *faces;
 public:
+    std::vector<cvision::processing::limb_recognition::hand::Hand> hands;
     explicit HandDetectorHelper(const cv::Mat &mask, const std::vector<cv::Rect> *faces = nullptr) : mask(mask), faces(faces) {}
 
     cv::Mat draw(const cv::Mat &src, const cv::Mat &original) override;

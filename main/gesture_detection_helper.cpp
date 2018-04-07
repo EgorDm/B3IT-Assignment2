@@ -29,8 +29,13 @@ cv::Mat HandDetectorHelper::draw(const cv::Mat &src, const cv::Mat &original) {
         return cv::contourArea(contour) < MIN_HAND_AREA;
     }), contours.end());
 
+    hands.clear();
     for (const auto &contour : contours) {
-        auto hand = processing::limb_recognition::hand::recognize_hand(contour);
+        if(contour.size() < 3) continue;
+        hands.push_back(processing::limb_recognition::hand::recognize_hand(contour));
+    }
+
+    for(const auto hand : hands) {
         circle(src, hand.palm_center, (int) hand.palm_radius, Scalar(255, 255, 255), 2);
         circle(src, hand.enclosing_center, (int) hand.enclosing_radius, Scalar(255, 255, 200), 2);
 
