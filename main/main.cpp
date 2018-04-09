@@ -2,7 +2,7 @@
 #include "../cvision/file_processing.h"
 #include "../cvision/image_processing.h"
 #include "window_creators.h"
-#include "gesture_detection_helper.h"
+#include "detection_helper.h"
 #include "segmentation_helper.h"
 #include "../cvision/visualization.h"
 #include "gesture_recognition_helper.h"
@@ -82,8 +82,9 @@ int main() {
     auto hand_detector = new HandDetectorHelper(patcher->mask);
 #endif
     helpers.push_back(hand_detector);
-    helpers.push_back(new GestureDetectionHelper({ "Triangle", "X", "Rectangle", "Circle" }));
-    helpers.push_back(new GestureRecognitionHelper(hand_detector));
+    auto hand_tracker = new HandTrackingHelper(hand_detector);
+    helpers.push_back(hand_tracker);
+    helpers.push_back(new GestureDetectionHelper({ "Triangle", "X", "Rectangle", "Circle" }, hand_tracker));
 
     auto window = new Window("Complex Segmentation (Bayes)", input, helpers);
     window->init();
