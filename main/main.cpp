@@ -93,7 +93,7 @@ int main() {
 #if USE_SOURCE_TYPE == SOURCE_TYPE_VIDEO
     while(true) {
         window->show();
-        if(cv::waitKey(30) >= 0 || input->frame.empty()) break;
+        if(cv::waitKey(1) >= 0 || input->frame.empty()) break;
     }
 #endif
 
