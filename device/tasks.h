@@ -13,6 +13,7 @@
 #include "../lib/scheduler/scheduler.h"
 #include "macros.h"
 #include "config.h"
+#include "../lib/Servo/src/Servo.h"
 
 class MQTTRoutine : public internals::RoutineTask {
 public:
@@ -47,9 +48,12 @@ private:
 };
 
 class WaterPlantRoutine : public internals::RoutineTask {
+private:
+    Servo servo;
 public:
-    WaterPlantRoutine() : RoutineTask(WATER_PLANT_POLL_INTERVAL) {
+    WaterPlantRoutine() : RoutineTask(WATER_PLANT_POLL_INTERVAL), servo() {
         sensor_data.water_ticks = WATER_PLANT_DURATION;
+        servo.attach(SERVO_PIN);
     };
 
     bool execute() override;

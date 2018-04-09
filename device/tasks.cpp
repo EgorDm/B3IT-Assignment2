@@ -45,6 +45,13 @@ bool SensorRoutine::execute() {
 
 bool WaterPlantRoutine::execute() {
     if (sensor_data.water_ticks == 0) sensor_data.last_watered = millis();
+
+    if(sensor_data.water_ticks <= WATER_PLANT_DURATION/2) {
+        servo.write(90);
+    } else {
+        servo.write(0);
+    }
+
     ++sensor_data.water_ticks;
 
     SHOUT("Watering the plant!");
@@ -53,10 +60,14 @@ bool WaterPlantRoutine::execute() {
 }
 
 bool WaterPlantRoutine::should_run(unsigned long time) {
-    return RoutineTask::should_run(time) && sensor_data.water_ticks < WATER_PLANT_DURATION;
+    auto run = RoutineTask::should_run(time);
+    if(run) servo.write(0);
+    return run && sensor_data.water_ticks < WATER_PLANT_DURATION;
 }
 
 bool AutomaticMaintenanceRoutine::execute() {
+    if(sensor_data.soil_moisture < 10) plant_routine->start_watering();
+
     return false;
 }
 
