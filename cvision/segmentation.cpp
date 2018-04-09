@@ -58,18 +58,18 @@ segmentation::clean_segmentation(const cv::Mat &src, const int &ksize, const int
     src.copyTo(ret);
 
     // Morphological Processing
-    if (ksize > 3) {
-        Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(ksize, ksize));
+    if (ksize > 0) {
+        Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size( 2*ksize + 1, 2*ksize+1 ), Point(ksize, ksize));
         morphologyEx(src, ret, MORPH_ERODE, kernel, Point(-1, -1), 2);
         morphologyEx(ret, ret, MORPH_DILATE, kernel, Point(-1, -1), 2);
     }
 
-    if (close_ksize > 3) {
-        Mat close_element = getStructuringElement(MORPH_ELLIPSE, Size(close_ksize, close_ksize), cv::Point(2, 2));
-        morphologyEx(ret, ret, MORPH_CLOSE, close_element, Point(-1, -1), 2);
+    if (close_ksize > 0) {
+        Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size( 2*close_ksize + 1, 2*close_ksize+1 ), Point(close_ksize, close_ksize));
+        morphologyEx(ret, ret, MORPH_CLOSE, kernel, Point(-1, -1), 2);
     }
 
-    if (blur_ksize > 0 && blur_ksize % 2 != 0) GaussianBlur(ret, ret, Size(blur_ksize, blur_ksize), 4);
+    if (blur_ksize > 0) GaussianBlur(ret, ret, Size(blur_ksize * 2, blur_ksize * 2), 4);
 
     return ret;
 }

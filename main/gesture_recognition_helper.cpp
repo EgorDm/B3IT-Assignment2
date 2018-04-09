@@ -47,7 +47,7 @@ bool GestureDetectionHelper::on_click(int x, int y, bool rb) {
 #define GESTURE_STATE_RECOGNIZED 4
 
 int GestureDetectSession::update_initialization(HandHistory *history) {
-    if (history->finger_histories.size() == 5) {
+    if (history->finger_histories.size() >= 5) {
         start_confirmed = std::chrono::duration_cast<std::chrono::milliseconds>
                 (std::chrono::system_clock::now().time_since_epoch()).count();
         return GESTURE_STATE_INITIALIZING;
@@ -74,7 +74,7 @@ int GestureDetectSession::update(HandHistory *history) {
         if (state != GESTURE_STATE_INITIALIZED) return state;
     }
 
-    if (history->finger_histories.size() == 5) {
+    if (history->finger_histories.size() >= 5) {
         return GESTURE_STATE_RECOGNIZED;
     }
 
