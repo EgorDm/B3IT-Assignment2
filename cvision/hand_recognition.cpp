@@ -45,6 +45,7 @@ Hand hand::recognize_hand(const std::vector<cv::Point> &contour) {
                                      return std::get<0>(c1) == std::get<0>(c2);
                                  }), candidates.end());
     hand.fingers = remove_duplicate_fingers(contour, candidates);
+    for(auto &finger : hand.fingers) finger.tip -= hand.palm_center;
 
     return hand;
 }

@@ -17,7 +17,7 @@
 #define FINGER_K_VAL 20
 #define FINGER_K_VAL_FALLBACK 20
 #define EPSILON_DEPTH 20
-#define MIN_FINGER_DIST 0.5 // Measured in finger widths
+#define MIN_FINGER_DIST 0.6 // Measured in finger widths
 
 namespace cvision { namespace processing { namespace limb_recognition { namespace hand {
     struct Finger {
@@ -88,6 +88,13 @@ namespace cvision { namespace processing { namespace limb_recognition { namespac
     std::vector<CandidateFinger> find_fingers_fallback(const std::vector<cv::Point> &contour,
                                                        const std::vector<cv::Vec4i> &defects);
 
+    /**
+     * Removal of duplicate fingers. If distance between points is smaller < x finger widths,
+     * they will be merged together.
+     * @param contour
+     * @param candidates
+     * @return Vector of fingers
+     */
     std::vector<Finger> remove_duplicate_fingers(const std::vector<cv::Point> &contour,
                                                  const std::vector<CandidateFinger> &candidates);
 }}}}
