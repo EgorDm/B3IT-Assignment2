@@ -53,7 +53,7 @@ namespace cvision { namespace utils { namespace geometry {
     incircle(const std::vector<cv::Point> &contour, const std::vector<cv::Point> &weight_points, double weight,
              const int step_size = 4) {
         // Simplify contour
-        auto epsilon = 0.01 * arcLength(contour, true);
+        auto epsilon = 0.005 * arcLength(contour, true);
         std::vector<cv::Point> approx;
         cv::approxPolyDP(contour, approx, epsilon, true);
 

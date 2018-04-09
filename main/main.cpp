@@ -23,11 +23,12 @@ using namespace cvision::processing;
 #define SOURCE_TYPE_IMAGE 2
 
 //#define USE_SOURCE std::tuple<file::Dataset, std::string>(own, "egordmImage-0005")
-#define USE_SOURCE std::tuple<file::Dataset, std::string>(videos, "2018-04-02 12-38-32")
+#define USE_SOURCE std::tuple<file::Dataset, std::string>(videos, "2018-04-09 12-36-30")
 #define USE_SOURCE_TYPE SOURCE_TYPE_VIDEO
-#define USE_MASK true
-#define USE_OVERRIDE_MASK true
-#define USE_FACE_DETECTION true
+#define USE_EVALUATE false
+#define USE_MASK false
+#define USE_OVERRIDE_MASK false
+#define USE_FACE_DETECTION false
 
 int main() {
     file::Dataset pratheepan("Pratheepan", ".jpg", ".png", false);
@@ -66,18 +67,17 @@ int main() {
 #endif
 
     auto patcher = new SegmentationPatcher();
-    auto face_detect = new FaceDetectorHelper();
 #if !USE_OVERRIDE_MASK
     helpers.push_back(new ComplexSegmentationHelper(data.positive_hst, data.env_hst, data.marginal_positive_prob));
 #endif
     helpers.push_back(patcher);
-#if USE_MASK
+#if USE_MASK && USE_EVALUATE
     helpers.push_back(new CFMatrixHelper(patcher->mask, label->frame));
 #endif
 #if USE_FACE_DETECTION
+    auto face_detect = new FaceDetectorHelper();
     helpers.push_back(face_detect);
     auto hand_detector = new HandDetectorHelper(patcher->mask, &face_detect->faces);
-
 #else
     auto hand_detector = new HandDetectorHelper(patcher->mask);
 #endif

@@ -10,13 +10,18 @@
 #include "../dollar_recognizer/GeometricRecognizer.h"
 #include "detection_helper.h"
 
-struct GestureDetectSession {
+class GestureDetectSession {
+private:
+    int update_initialization(HandHistory *history);
+public:
     int hand_id;
     int finger_id;
+    double start_confirmed;
     DollarRecognizer::Path2D positions;
 
-    GestureDetectSession(int hand_id, int finger_id, const DollarRecognizer::Path2D &positions)
-            : hand_id(hand_id),  finger_id(finger_id), positions(positions) {}
+    explicit GestureDetectSession(int hand_id) : hand_id(hand_id), finger_id(-1), start_confirmed(-1) {}
+
+    int update(HandHistory *history);
 };
 
 class GestureDetectionHelper : public WindowHelper {

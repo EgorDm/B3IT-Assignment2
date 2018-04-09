@@ -29,6 +29,7 @@ private:
     cv::VideoCapture capture;
     bool is_video{};
     bool output;
+    bool flip = false;
 public:
     cv::Mat frame;
 
@@ -40,14 +41,14 @@ public:
     }
 
     explicit InputHelper(const int &source_camera, const bool &output = false)
-            : capture(cv::VideoCapture(source_camera)), is_video(true), output(output) {
+            : capture(cv::VideoCapture(source_camera)), is_video(true), output(output), flip(true) {
         draw(cv::Mat(), cv::Mat());
     }
 
     cv::Mat draw(const cv::Mat &src, const cv::Mat &original) override {
         if (is_video) {
             capture >> frame;
-            cv::flip(frame, frame, 1);
+            if(flip) cv::flip(frame, frame, 1);
         }
         if(output) return frame;
         return WindowHelper::draw(src, original);
