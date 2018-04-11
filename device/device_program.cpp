@@ -24,6 +24,8 @@ void DeviceProgram::init() {
     add_task(new AutomaticMaintenanceRoutine(plant_routine));
     add_task(new DisplayRoutine(plant_routine));
 
+    pinMode(D7, OUTPUT);
+
     SHOUT(WiFi.localIP());
 }
 
@@ -44,7 +46,7 @@ void DeviceProgram::data_recieved(char *topic, byte *payload, unsigned int lengt
         sensor_routine->execute();
     } else if (strcmp(topic, AUTOMATIC_MODE_TOPIC) == 0) {
         config.automatic_mode = *payload == '1';
-        digitalWrite(BUILTIN_LED, config.automatic_mode ? HIGH : LOW);
+        digitalWrite(D7, config.automatic_mode ? HIGH : LOW);
         SHOUT(String("Toggling automatic mode to ") + config.automatic_mode);
     }
 }
