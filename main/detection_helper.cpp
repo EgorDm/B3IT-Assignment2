@@ -35,6 +35,7 @@ cv::Mat HandDetectorHelper::draw(const cv::Mat &src, const cv::Mat &original) {
     }), contours.end());
 
     hands.clear();
+    std::vector<std::vector<cv::Point>> roi_contours;
     for (const auto &contour : contours) {
         if(contour.size() < 3) continue;
         bool is_face = false;
@@ -46,10 +47,13 @@ cv::Mat HandDetectorHelper::draw(const cv::Mat &src, const cv::Mat &original) {
             }
         }
         if(is_face) continue;
-        auto hand = processing::limb_recognition::hand::recognize_hand(contour);
+        std::vector<cv::Point> roi_contour;
+        auto hand = processing::limb_recognition::hand::recognize_hand(contour, roi_contour);
         if(hand.palm_radius < MIN_HAND_RADIUS && hand.enclosing_radius > MIN_HAND_RADIUS) continue; // Small hands are removed
         hands.push_back(hand);
+        roi_contours.push_back(roi_contour);
     }
+    drawContours(src, roi_contours, -1, Scalar(0, 0, 255), 2);
 
     return src;
 }

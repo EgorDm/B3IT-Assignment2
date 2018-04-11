@@ -48,7 +48,7 @@ namespace cvision { namespace processing { namespace limb_recognition { namespac
      * @param contour
      * @return
      */
-    Hand recognize_hand(const std::vector<cv::Point> &contour);
+    Hand recognize_hand(const std::vector<cv::Point> &contour, std::vector<cv::Point> &output_contour);
 
     /**
      * Find the hand palm which is a largest circle that can fit into the hand
@@ -65,7 +65,7 @@ namespace cvision { namespace processing { namespace limb_recognition { namespac
      * @param roi
      * @return
      */
-    Circle find_enclosing_circle(const std::vector<cv::Point> &contour, const Hand &hand, const double &roi);
+    Circle find_enclosing_circle(const std::vector<cv::Point> &contour, const Hand &hand, const double &roi, std::vector<cv::Point> &output_contour);
 
     /**
      * Find the fingers the conventional way. By checking the gap and their sizes.

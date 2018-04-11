@@ -11,9 +11,9 @@ using namespace cvision::processing::limb_recognition;
 using namespace cvision::processing::limb_recognition::hand;
 using namespace cvision;
 
-Hand hand::recognize_hand(const std::vector<cv::Point> &contour) {
+Hand hand::recognize_hand(const std::vector<cv::Point> &contour, std::vector<cv::Point> &output_contour) {
     // Draw make convex polygon
-    std::vector<cv::Point> hull;
+    std::vector<cv::Point> hull, roi_contour;
     std::vector<int> hullIndexes;
     cv::convexHull(contour, hullIndexes);
     cv::convexHull(contour, hull);
@@ -29,7 +29,9 @@ Hand hand::recognize_hand(const std::vector<cv::Point> &contour) {
     hand.palm_radius = std::get<1>(palm);
     // Find circle enclosing hand* aka. Frathest fingertip position
     auto roi = hand.palm_radius * HAND_ROI_MULT;
-    auto enc_circle = find_enclosing_circle(contour, hand, roi);
+
+    auto enc_circle = find_enclosing_circle(contour, hand, roi, roi_contour);
+    output_contour = roi_contour;
     hand.enclosing_center = std::get<0>(enc_circle);
     hand.enclosing_radius = std::get<1>(enc_circle);
     hand.palm_to_hand_ratio = hand.enclosing_radius / hand.palm_radius;
@@ -108,7 +110,8 @@ Circle hand::find_palm(const std::vector<cv::Point> &contour, const std::vector<
     return utils::geometry::incircle(contour, weight_points, PALM_WEIGHT_POINT_WEIGHT);
 }
 
-Circle hand::find_enclosing_circle(const std::vector<cv::Point> &contour, const Hand &hand, const double &roi) {
+Circle hand::find_enclosing_circle(const std::vector<cv::Point> &contour, const Hand &hand, const double &roi,
+                                   std::vector<cv::Point> &output_contour) {
     // Cut off arm. Aka if something is goes outside ROI then its an arm or something else. This will be cut off
     // to the wrist aka. begin palm
     std::vector<cv::Point> arm_border;
@@ -146,9 +149,13 @@ Circle hand::find_enclosing_circle(const std::vector<cv::Point> &contour, const 
         }
 
         minEnclosingCircle(roi_contour, enclosing_center, enclosing_radius);
+        output_contour = roi_contour;
     } else {
         minEnclosingCircle(contour, enclosing_center, enclosing_radius);
+        output_contour = contour;
     }
+
+
 
     return {enclosing_center, enclosing_radius};
 }
