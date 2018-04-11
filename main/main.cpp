@@ -23,14 +23,14 @@ using namespace cvision::processing;
 #define SOURCE_TYPE_IMAGE 2
 
 //#define USE_SOURCE std::tuple<file::Dataset, std::string>(own, "egordmImage-0005")
-//#define USE_SOURCE std::tuple<file::Dataset, std::string>(videos, "2018-04-09 12-36-30")
+#define USE_SOURCE std::tuple<file::Dataset, std::string>(videos, "2018-04-02 12-38-32")
 //#define USE_SOURCE std::tuple<file::Dataset, std::string>(hgr1, "W_P_hgr1_id03_10")
-#define USE_SOURCE std::tuple<file::Dataset, std::string>(videos, "2018-04-09 12-36-30")
+//#define USE_SOURCE std::tuple<file::Dataset, std::string>(videos, "2018-04-09 12-36-30")
 #define USE_SOURCE_TYPE SOURCE_TYPE_VIDEO
 #define USE_EVALUATE false
 #define USE_MASK false
 #define USE_OVERRIDE_MASK false
-#define USE_FACE_DETECTION false
+#define USE_FACE_DETECTION true
 
 int main() {
     file::Dataset pratheepan("Pratheepan", ".jpg", ".png", false);

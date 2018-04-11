@@ -10,6 +10,9 @@
 #include "../dollar_recognizer/GeometricRecognizer.h"
 #include "detection_helper.h"
 
+
+#define RESULT_DURATION_DISPLAY 6000
+
 class GestureDetectSession {
 private:
     int update_initialization(HandHistory *history);
@@ -24,6 +27,15 @@ public:
     int update(HandHistory *history);
 };
 
+struct GestureDetectionResult {
+    double recognized_time;
+    int hand_id;
+    DollarRecognizer::RecognitionResult result;
+
+    GestureDetectionResult(double recognized_time, int hand_id, const DollarRecognizer::RecognitionResult &result)
+            : recognized_time(recognized_time), hand_id(hand_id), result(result) {}
+};
+
 class GestureDetectionHelper : public WindowHelper {
 private:
     DollarRecognizer::GeometricRecognizer recognizer;
@@ -34,6 +46,8 @@ private:
 public:
     DollarRecognizer::RecognitionResult *result;
     std::vector<GestureDetectSession> sessions;
+    std::vector<GestureDetectionResult> results;
+
 
     explicit GestureDetectionHelper(const std::vector<std::string> &active_templates, const HandTrackingHelper *hand_tracker);
 

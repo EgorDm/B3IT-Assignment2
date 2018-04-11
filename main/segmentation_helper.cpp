@@ -87,6 +87,8 @@ Mat SegmentationPatcher::draw(const cv::Mat &src, const cv::Mat &original) {
     mask = segmentation::clean_segmentation(src, ed_size, close_size, (postblur % 2 == 0) ? postblur + 1 : postblur);
     if(mask.channels() > 1) cvtColor(mask, mask, COLOR_BGR2GRAY);
     Mat ret;
+
+    original.convertTo(ret, -1, 1, -100);
     original.copyTo(ret, mask);
     return ret;
 }

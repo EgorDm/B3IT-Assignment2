@@ -107,8 +107,9 @@ Mat GestureDetectionHelper::draw(const cv::Mat &src, const cv::Mat &original) {
         if (state == GESTURE_STATE_CANCELLED || state == GESTURE_STATE_TIMED_OUT || state == GESTURE_STATE_RECOGNIZED) {
             if (state == GESTURE_STATE_RECOGNIZED) {
                 auto res = recognizer.recognize(sessions[i].positions);
-                result = new RecognitionResult(res);
                 std::cout << "Recognized: " << res.name << " for " << sessions[i].hand_id << std::endl;
+                auto current_time = (double)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+                results.emplace_back(current_time, sessions[i].hand_id, res);
             }
 
             sessions.erase(sessions.begin() + i);
@@ -132,12 +133,37 @@ Mat GestureDetectionHelper::draw(const cv::Mat &src, const cv::Mat &original) {
         }
     }
 
+    int draw_offset = 15;
     for (const auto &session : sessions) {
+        if(session.finger_id != -1) {
+            auto result = recognizer.recognize(session.positions);
+            std::stringstream ss;
+            ss << "Hand: " << session.hand_id << " Recognized: " << result.name << " Score: " << result.score;
+            cv::putText(src, ss.str(), Point(0, draw_offset), FONT_HERSHEY_PLAIN, 1, Scalar(255,255,255), 1);
+            draw_offset += 20;
+        } else {
+            std::stringstream ss;
+            ss << "Hand: " << session.hand_id << (session.start_confirmed < 0 ? " is doing nothing" : " is prepared for gesture");
+            cv::putText(src, ss.str(), Point(0, draw_offset), FONT_HERSHEY_PLAIN, 1, Scalar(255,255,255), 1);
+            draw_offset += 20;
+        }
+
         for (int i = 1; i < session.positions.size(); ++i) {
             auto p1 = session.positions[i - 1];
             auto p2 = session.positions[i];
             line(src, Point((int) p1.x, (int) p1.y), Point((int) p2.x, (int) p2.y), Scalar(0, 0, 255));
         }
+    }
+    for(int i = (int)results.size() - 1; i >= 0; --i) {
+        auto current_time = std::chrono::duration_cast<std::chrono::milliseconds>
+                (std::chrono::system_clock::now().time_since_epoch()).count();
+
+        std::stringstream ss;
+        ss << "Hand: " << results[i].hand_id << " Finalized recognition: " << results[i].result.name << " Score: " << results[i].result.score;
+        cv::putText(src, ss.str(), Point(0, draw_offset), FONT_HERSHEY_PLAIN, 1, Scalar(0,255,255), 1);
+        draw_offset += 20;
+
+        if(current_time - results[i].recognized_time > RESULT_DURATION_DISPLAY) results.erase(results.begin() + i);
     }
 
     for (int i = 1; i < positions.size(); ++i) {
