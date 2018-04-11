@@ -2,7 +2,7 @@
 // Created by egordm on 15-3-2018.
 //
 
-#include <c++/7.3.0/chrono>
+#include <chrono>
 #include "segmentation.h"
 #include "visualization.h"
 #include "evaluation.h"
@@ -69,7 +69,7 @@ segmentation::clean_segmentation(const cv::Mat &src, const int &ksize, const int
         morphologyEx(ret, ret, MORPH_CLOSE, kernel, Point(-1, -1), 2);
     }
 
-    if (blur_ksize > 0) GaussianBlur(ret, ret, Size(blur_ksize * 2, blur_ksize * 2), 4);
+    if (blur_ksize > 0) GaussianBlur(ret, ret, Size(blur_ksize * 2 + 1, blur_ksize * 2 + 1), 4);
 
     return ret;
 }

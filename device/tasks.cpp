@@ -61,7 +61,7 @@ bool WaterPlantRoutine::execute() {
 
 bool WaterPlantRoutine::should_run(unsigned long time) {
     auto run = RoutineTask::should_run(time);
-    if(run) servo.write(0);
+    if(!run) servo.write(0);
     return run && sensor_data.water_ticks < WATER_PLANT_DURATION;
 }
 
