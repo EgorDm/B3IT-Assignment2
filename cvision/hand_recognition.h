@@ -96,7 +96,7 @@ namespace cvision { namespace processing { namespace limb_recognition { namespac
      * @return Vector of fingers
      */
     std::vector<Finger> remove_duplicate_fingers(const std::vector<cv::Point> &contour,
-                                                 const std::vector<CandidateFinger> &candidates);
+                                                 const std::vector<CandidateFinger> &candidates, const Hand &hand);
 }}}}
 
 

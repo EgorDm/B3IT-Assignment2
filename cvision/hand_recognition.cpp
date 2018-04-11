@@ -44,14 +44,14 @@ Hand hand::recognize_hand(const std::vector<cv::Point> &contour) {
                                  [&](const CandidateFinger &c1, const CandidateFinger &c2) {
                                      return std::get<0>(c1) == std::get<0>(c2);
                                  }), candidates.end());
-    hand.fingers = remove_duplicate_fingers(contour, candidates);
+    hand.fingers = remove_duplicate_fingers(contour, candidates, hand);
     for(auto &finger : hand.fingers) finger.tip -= hand.palm_center;
 
     return hand;
 }
 
 std::vector<Finger> hand::remove_duplicate_fingers(const std::vector<cv::Point> &contour,
-                                                   const std::vector<CandidateFinger> &candidates) {
+                                                   const std::vector<CandidateFinger> &candidates,const Hand &hand) {
     std::vector<Finger> candidate_fingers, ret;
     // Construct fingers from candidates and calculate their width
     double avg_finger_thickness = 0;
@@ -59,9 +59,19 @@ std::vector<Finger> hand::remove_duplicate_fingers(const std::vector<cv::Point> 
         const auto &finger_tip_idx = std::get<0>(candidate);
         auto p1 = contour[utils::wrap_around_array((int) contour.size(), finger_tip_idx - FINGER_K_VAL)];
         auto p2 = contour[utils::wrap_around_array((int) contour.size(), finger_tip_idx + FINGER_K_VAL)];
-        auto tip = contour[finger_tip_idx];
+        //auto tip = contour[finger_tip_idx];
         auto mid = (p1 + p2) / 2;
         avg_finger_thickness += sqrt(math::distance_sq(p1, p2));
+
+        // Farthest point from palm center is the tip. Within the curvature range. This is a last minute fix
+        // It seemed to be more stable than just the curvature. Curvature is still used though, only not for the tip
+        int finger_tip_new = finger_tip_idx;
+        for(int i = finger_tip_idx - FINGER_K_VAL; i < finger_tip_idx + FINGER_K_VAL; ++i) {
+            auto c1 = contour[utils::wrap_around_array((int) contour.size(), finger_tip_new)];
+            auto c2 = contour[utils::wrap_around_array((int) contour.size(), i)];
+            if(math::distance_sq(c2, hand.palm_center) > math::distance_sq(c1, hand.palm_center)) finger_tip_new = i;
+        }
+        auto tip = contour[utils::wrap_around_array((int) contour.size(), finger_tip_new)];
 
         candidate_fingers.emplace_back(tip, tip - mid, false);
     }
