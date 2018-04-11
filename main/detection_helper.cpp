@@ -11,10 +11,16 @@ using namespace cvision;
 using namespace cv;
 
 
+
+
 cv::Mat HandDetectorHelper::draw(const cv::Mat &src, const cv::Mat &original) {
     Mat mask_final;
     mask.copyTo(mask_final);
 
+    // Dilemma subtract face from mask which enables having a portion of hand over face while still finding the other fingers
+    // or subtract face form contours and dont have any flase fositives round the face area but also no hand if it
+    // overlaps even slightly
+    // Here the first approach is taken
     if (faces != nullptr && !faces->empty()) {
         for (const auto &face : *faces) {
             Point center(face.x + face.width / 2, face.y + face.height / 2);
@@ -31,7 +37,18 @@ cv::Mat HandDetectorHelper::draw(const cv::Mat &src, const cv::Mat &original) {
     hands.clear();
     for (const auto &contour : contours) {
         if(contour.size() < 3) continue;
-        hands.push_back(processing::limb_recognition::hand::recognize_hand(contour));
+        bool is_face = false;
+        for(const auto &face : *faces) {
+            Point center(face.x + face.width / 2, face.y + face.height / 2);
+            if(cv::pointPolygonTest(contour, center, false) > 0) {
+                is_face = true;
+                break;
+            }
+        }
+        if(is_face) continue;
+        auto hand = processing::limb_recognition::hand::recognize_hand(contour);
+        if(hand.palm_radius < MIN_HAND_RADIUS && hand.enclosing_radius > MIN_HAND_RADIUS) continue; // Small hands are removed
+        hands.push_back(hand);
     }
 
     return src;

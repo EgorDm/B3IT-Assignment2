@@ -60,7 +60,7 @@ public:
     Mat mask;
     int ed_size, close_size, postblur;
 
-    SegmentationPatcher() : ed_size(4), close_size(0), postblur(0) {}
+    SegmentationPatcher() : ed_size(2), close_size(0), postblur(0) {}
 
     std::vector<Trackbar> get_trackbars() override;
 

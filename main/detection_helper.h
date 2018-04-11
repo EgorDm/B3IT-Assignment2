@@ -18,6 +18,7 @@
 #define DISTANCE_THRESH (min_dim * 6.0)
 #define HAND_TIMEOUT_TICKS 5
 #define FINGER_TIMEOUT_TICKS 5
+#define MIN_HAND_RADIUS 20
 
 using namespace cvision::processing::limb_recognition::hand;
 using namespace cvision::processing::tracking;
