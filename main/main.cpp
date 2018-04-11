@@ -23,6 +23,8 @@ using namespace cvision::processing;
 #define SOURCE_TYPE_IMAGE 2
 
 //#define USE_SOURCE std::tuple<file::Dataset, std::string>(own, "egordmImage-0005")
+//#define USE_SOURCE std::tuple<file::Dataset, std::string>(videos, "2018-04-09 12-36-30")
+//#define USE_SOURCE std::tuple<file::Dataset, std::string>(hgr1, "W_P_hgr1_id03_10")
 #define USE_SOURCE std::tuple<file::Dataset, std::string>(videos, "2018-04-09 12-36-30")
 #define USE_SOURCE_TYPE SOURCE_TYPE_VIDEO
 #define USE_EVALUATE false
@@ -44,14 +46,14 @@ int main() {
 
 #if USE_SOURCE_TYPE == SOURCE_TYPE_IMAGE
 
-    InputHelper *input = new InputHelper(std::get<0>(USE_SOURCE).load_input(std::get<1>(USE_SOURCE)));
+    InputHelper *input = new InputHelper(std::get<0>(USE_SOURCE).load_input(std::get<1>(USE_SOURCE)), true);
 #if USE_MASK
     InputHelper *label = new InputHelper(std::get<0>(USE_SOURCE).load_label(std::get<1>(USE_SOURCE)), USE_OVERRIDE_MASK);
 #endif
 #elif USE_SOURCE_TYPE == SOURCE_TYPE_VIDEO
     std::stringstream ss;
     ss << DATASETS_PATH << std::get<0>(USE_SOURCE).name << FILE_SEPARATOR << "inputs" << FILE_SEPARATOR << std::get<1>(USE_SOURCE) << ".mp4";
-    InputHelper *input = new InputHelper(ss.str());
+    InputHelper *input = new InputHelper(ss.str(), true);
 #if USE_MASK
     ss.str("");
     ss << DATASETS_PATH << std::get<0>(USE_SOURCE).name << FILE_SEPARATOR << "labels" << FILE_SEPARATOR << std::get<1>(USE_SOURCE) << ".mp4";
@@ -95,6 +97,8 @@ int main() {
         window->show();
         if(cv::waitKey(1) >= 0 || input->frame.empty()) break;
     }
+#else
+    window->show();
 #endif
 
     waitKey(0);
